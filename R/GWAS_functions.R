@@ -1,7 +1,8 @@
 # A collection of functions for working with GWAS tables
 # Niklas Schandry, Patrick Hüther 2019
 
-#This function has no real purpose.
+#' This function has no real purpose.
+#' @param gwas A gwas result table
 
 format_gwas <- function(gwas){
   gwas %<>% dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
@@ -10,7 +11,11 @@ format_gwas <- function(gwas){
   return(gwas_object)
 }
 
-#This function reads GWAS output from limix and puts it into a specific (somewhat arbitraty) format.
+#' Read a GWAS result file from limix (csv) and put it into a specific (somewhat arbitrary) format.
+#'
+#' `read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether
+#' a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
+#' @param gwas_path Path to a gwas result file containing SNP positions and p-values
 
 read_gwas <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
@@ -33,8 +38,10 @@ read_gwas <- function(gwas_path){
   return(gwas_object)
 }
 
-# This function takes a GWAS table (from read_gwas) and queries 1001genomes to obtain the
-# IDs of all accessions that carry the SNP ranked at SNPrank.
+#' Query the 1001genomes API to obtain accession ids that carry a SNP of interest
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (significance) rank of the SNP of interest
+#' @seealso [read_gwas()]
 
 get_polymorph_acc <- function(gwas_table, SNPrank){
   return(gwas_table %>%
@@ -48,8 +55,10 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
   )
 }
 
-#This function plots an interative map of accessions that carry the SNP of interest;
-#needs GWAS table and the rank of the SNP of interest
+#' Plot an interactive map of accessions that carry a SNP of interest
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (significance) rank of the SNP of interest
+#' @seealso [read_gwas()]
 
 plot_acc_map <- function(gwas_table, SNPrank){
   allAccessions <- readr::read_csv("~/labshare/lab/accessions/1001genomes-accessions.csv")
@@ -64,7 +73,10 @@ plot_acc_map <- function(gwas_table, SNPrank){
                                 stroke=FALSE, radius=5, fillOpacity=0.8, color="#007243")
 }
 
-# Get expression data for a specific GeneID (format: ATXGNNNNN)
+#' Query the AraPheno API to get expression data for a gene of interest
+#' @param GeneID An Arabidopsis gene identifier
+#' @examples
+#' get_expression("AT4G21940")
 
 get_expression <- function(GeneID){
   if(!exists("Kawakatsu_dat")){
