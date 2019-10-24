@@ -46,15 +46,15 @@ read_gwas <- function(gwas_path){
 # IDs of all accessions that carry the SNP ranked at SNPrank.
 
 get_polymorph_acc <- function(gwas_table, SNPrank){
- return(gwas_table %>%
-    arrange(desc(log10_p)) %>%
-    dplyr::slice(SNPrank) %>%
-    dplyr::select(chrom, pos) %>%
-      {httr::content(httr::GET(paste0("http://tools.1001genomes.org/api/v1.1/variants.csv?type=snps;accs=all;chr=",
-                       .$chrom,
-                       ";pos=",
-                       .$pos)), col_types = "iicccccc") }
- )
+  return(gwas_table %>%
+           arrange(desc(log10_p)) %>%
+           dplyr::slice(SNPrank) %>%
+           dplyr::select(chrom, pos) %>%
+           {httr::content(httr::GET(paste0("http://tools.1001genomes.org/api/v1.1/variants.csv?type=snps;accs=all;chr=",
+                                           .$chrom,
+                                           ";pos=",
+                                           .$pos)), col_types = "iicccccc") }
+  )
 }
 
 #This function plots an interative map of accessions that carry the SNP of interest;
@@ -80,6 +80,9 @@ get_expression <- function(GeneID){
     Kawakatsu_dat <- read_csv("https://arapheno.1001genomes.org/static/rnaseq/Epigenomic_Diversity_in_A._thaliana_(Kawakatsu_et_al._2016).csv") %>%
       as_tibble() %>% set_colnames(c("ACC_ID", colnames(.)[2:ncol(.)]))
   }
+  if(!paste(GeneID) %in% colnames(Kawakatsu_dat)){
+    stop(paste0("No expression data in Kawakatsu2016 for GeneID: ",GeneID))
+  }
   Kawakatsu_dat %>% dplyr::select(ACC_ID, eval(GeneID)) %>%
     pivot_longer(starts_with("AT"), names_to = "GeneID", values_to = "phenotype_value")
 }
@@ -88,20 +91,20 @@ get_expression <- function(GeneID){
 # where accessions that contain SNP have TRUE in hasSNP
 
 intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
-                                       get_expression(GeneID) %>%
-                                       mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table,SNPrank)$strain ~ TRUE,
-                                                                 TRUE ~ FALSE))
+  get_expression(GeneID) %>%
+    mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table,SNPrank)$strain ~ TRUE,
+                              TRUE ~ FALSE))
 }
 
 # Better than the above, simply works with a GWAS table and the rank, makes use of get_nearest_genes to find closest gene.
 
 retrieve_counts <- function(gwas_table, SNPrank){
-genes <-  get_nearest_genes(gwas_table, SNPrank) %>%
+  genes <-  get_nearest_genes(gwas_table, SNPrank) %>%
     slice(SNPrank) %>%
     .$GeneId
-    get_expression(genes) %>%
+  get_expression(genes) %>%
     mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
-                               TRUE ~ FALSE))
+                              TRUE ~ FALSE))
 }
 
 # Convenience quick plot, using data from retrieve_counts
@@ -113,10 +116,12 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank){
     geom_boxplot(aes(fill = hasSNP)) +
     ggbeeswarm::geom_beeswarm(alpha = 0.3) +
     labs(title = paste0("Expression of nearest gene by SNP presence"),
-                        caption = "Expression data from araPheno") +
+         caption = "Expression data from araPheno",
+         x = "SNP present",
+         y = "Value") +
     theme_bw() +
     facet_wrap(~GeneID)
- print(p)
+  print(p)
 }
 
 
