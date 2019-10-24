@@ -10,6 +10,8 @@ require(biomaRt)
 require(plyranges)
 require(leaflet)
 
+#This function has no real purpose.
+
 format_gwas <- function(gwas){
   gwas %<>% mutate(chrom = as.double( str_extract(chrom, "[0-9]")),
                    log10_p = score,
@@ -21,7 +23,7 @@ format_gwas <- function(gwas){
 
 read_gwas <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
-  fdr_corr <- qvalue::qvalue(p = gwas_object$pv) 
+  fdr_corr <- qvalue::qvalue(p = gwas_object$pv)
   fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05 )]) %>% max() %>% log10() %>% abs()
   bf_corr <- (0.05/nrow(gwas_object)) %>% log10() %>% abs()
   gwas_object %<>% mutate(chrom = as.double( str_extract(chrom, "[0-9]")),
@@ -31,34 +33,38 @@ read_gwas <- function(gwas_path){
                           log10_p = -log10(pv),
                           fdr_thresh = fdr_thresh,
                           bf_corr = bf_corr,
-                          model = case_when(grepl(pattern = "_specific_", gwas_path) ~ "specific", 
+                          model = case_when(grepl(pattern = "_specific_", gwas_path) ~ "specific",
                                             grepl(pattern = "_common_", gwas_path) ~ "common",
                                             grepl(pattern = "_any_", gwas_path) ~ "any",
                                             TRUE ~ "Unknown"
                           )
-  ) 
+  )
   return(gwas_object)
 }
+
+# This function takes a GWAS table (from read_gwas) and queries 1001genomes to obtain the
+# IDs of all accessions that carry the SNP ranked at SNPrank.
 
 get_polymorph_acc <- function(gwas_table, SNPrank){
  return(gwas_table %>%
     arrange(desc(log10_p)) %>%
-    dplyr::slice(SNPrank) %>% 
+    dplyr::slice(SNPrank) %>%
     dplyr::select(chrom, pos) %>%
-      {httr::content(httr::GET(paste0("http://tools.1001genomes.org/api/v1.1/variants.csv?type=snps;accs=all;chr=", 
+      {httr::content(httr::GET(paste0("http://tools.1001genomes.org/api/v1.1/variants.csv?type=snps;accs=all;chr=",
                        .$chrom,
                        ";pos=",
                        .$pos)), col_types = "iicccccc") }
  )
 }
 
-## show an interative map of accessions that carry the SNP of interest; needs GWAS table and the rank of the SNP of interest
+#This function plots an interative map of accessions that carry the SNP of interest;
+#needs GWAS table and the rank of the SNP of interest
 
 plot_acc_map <- function(gwas_table, SNPrank){
   allAccessions <- readr::read_csv("~/labshare/lab/accessions/1001genomes-accessions.csv")
-  allAccessions %>% 
-    filter(id %in% get_polymorph_acc(gwas_table, SNPrank)$strain) %>% 
-    leaflet(data=.) %>% 
+  allAccessions %>%
+    filter(id %in% get_polymorph_acc(gwas_table, SNPrank)$strain) %>%
+    leaflet(data=.) %>%
     addTiles() %>%
     addCircleMarkers(lng=~longitude,
                      lat=~latitude,
@@ -67,46 +73,19 @@ plot_acc_map <- function(gwas_table, SNPrank){
                      stroke=FALSE, radius=5, fillOpacity=0.8, color="#007243")
 }
 
- # SNPMatrix related
-
-SNPMatrix <- feather::feather("~/labshare/lab/Niklas/Bx_Soils/SNPmatrix_with_chroms.feather")
-
-## Check accessions that have this SNP
-
-SNP_lookup <- function(chromosome, position){
-  SNPMatrix %>%
-    as_tibble %>%
-    filter(chrom == chromosome, pos == position) %>%
-    gather(accession,SNP, 1:(ncol(.)-2)) %>% 
-    filter(SNP == 1) %>% 
-    dplyr::select(accession) %>% 
-    unlist(.$accession) %>% 
-    unname %>% 
-    unique
-}
-
-## Check accession based on GWAS table; needs GWAS table and the rank of the SNP of interest
-
-get_acc_w_snp <- function(gwas_table, SNPrank) {
-  acc_w_snp <- gwas_table %>%
-    get_nearest_genes(SNPrank) %>%
-    dplyr::select(chrom, pos) %>%
-    {SNP_lookup(.$chrom[SNPrank] ,.$pos[SNPrank])}
-  return(acc_w_snp)
-}
-
 # Get expression data for a specific GeneID (format: ATXGNNNNN)
 
 get_expression <- function(GeneID){
   if(!exists("Kawakatsu_dat")){
-    Kawakatsu_dat <<- read_csv("https://arapheno.1001genomes.org/static/rnaseq/Epigenomic_Diversity_in_A._thaliana_(Kawakatsu_et_al._2016).csv") %>% 
+    Kawakatsu_dat <- read_csv("https://arapheno.1001genomes.org/static/rnaseq/Epigenomic_Diversity_in_A._thaliana_(Kawakatsu_et_al._2016).csv") %>%
       as_tibble() %>% set_colnames(c("ACC_ID", colnames(.)[2:ncol(.)]))
   }
-  Kawakatsu_dat %>% dplyr::select(ACC_ID, eval(GeneID)) %>% 
+  Kawakatsu_dat %>% dplyr::select(ACC_ID, eval(GeneID)) %>%
     pivot_longer(starts_with("AT"), names_to = "GeneID", values_to = "phenotype_value")
 }
 
-# Based on a GeneID and a SNPtable, returns a table where accessions that contain SNP have TRUE in hasSNP
+# Based on a GeneID and a SNPtable, returns a table of expression values for that gene,
+# where accessions that contain SNP have TRUE in hasSNP
 
 intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
                                        get_expression(GeneID) %>%
@@ -114,11 +93,11 @@ intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
                                                                  TRUE ~ FALSE))
 }
 
-# Similar to the above, but simply works with a GWAS table and the rank, makes use of get_nearest_genes to find closest gene.
+# Better than the above, simply works with a GWAS table and the rank, makes use of get_nearest_genes to find closest gene.
 
 retrieve_counts <- function(gwas_table, SNPrank){
-genes <-  get_nearest_genes(gwas_table, SNPrank) %>% 
-    slice(SNPrank) %>% 
+genes <-  get_nearest_genes(gwas_table, SNPrank) %>%
+    slice(SNPrank) %>%
     .$GeneId
     get_expression(genes) %>%
     mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
@@ -128,8 +107,8 @@ genes <-  get_nearest_genes(gwas_table, SNPrank) %>%
 # Convenience quick plot, using data from retrieve_counts
 
 plot_intersect_expression_snp <- function(gwas_table, SNPrank){
-  
-  p <-  retrieve_counts(gwas_table, SNPrank) %>% 
+
+  p <-  retrieve_counts(gwas_table, SNPrank) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
     ggbeeswarm::geom_beeswarm(alpha = 0.3) +
@@ -140,11 +119,11 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank){
  print(p)
 }
 
-                                      
 
-# Finding nearest genes for hits
+# Finding nearest genes for GWAS hits
 
-# This function takes a table as it comes out of limix and extracts the gene annotations that match the top n_hit SNPs from the arabidopsis genome.
+# This function takes a table as it comes out of read_gwas and extracts the gene annotations that match the top n_hit SNPs
+# from the arabidopsis genome.
 # This function will assign araGenes in the Global Environment!
 
 get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
@@ -153,7 +132,7 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
   }
   if(!require(plyranges)) {
     stop("Please install plyranges")
-  } 
+  }
   if(!require(biomaRt)) {
     stop("Please install biomaRt")
   }
@@ -163,15 +142,15 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
   require(plyranges)
   require(biomaRt)
   require(tidyverse)
-  # get annotation info from plants_mart 
+  # get annotation info from plants_mart
   if(!exists("araGenes")){
-    ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org') 
+    ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org')
     # Get genome, rename columns, make into granges
     araGenes <<- getBM(c("ensembl_gene_id",
-                         "chromosome_name", 
+                         "chromosome_name",
                          "start_position",
                          "end_position",
-                         "strand", 
+                         "strand",
                          "description",
                          "transcript_biotype"),
                        mart=ara) %>%
@@ -181,36 +160,37 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
                     start = start_position,
                     end = end_position) %>%
       dplyr::filter(str_detect(chromosome_name,"[1-9]")) %>%
-      dplyr::mutate(seqnames=paste0("Chr",chromosome_name)) %>% 
+      dplyr::mutate(seqnames=paste0("Chr",chromosome_name)) %>%
       as_granges()
   }
-  
-  
-  snp <- GWAS %>% 
+
+
+  snp <- GWAS %>%
     dplyr::arrange(desc(-log10(pv))) %>%
-    dplyr::slice(1:n_hit) %>% 
+    dplyr::slice(1:n_hit) %>%
     dplyr::mutate(seqnames = paste0("Chr", chrom),
                   start = pos,
-                  end = pos) %>% 
-    tibble::rownames_to_column("SNP_rank") %>% 
-    as_granges() 
-  
+                  end = pos) %>%
+    tibble::rownames_to_column("SNP_rank") %>%
+    as_granges()
+
   plyranges::join_nearest(snp, araGenes) %>%
-    as_tibble() %>% 
+    as_tibble() %>%
     dplyr::select(SNP_rank, chrom, pos, Significant, log10_p, mac, GeneId, description, transcript_biotype, start_position, end_position#, .drop_ranges = TRUE
-    ) %>% 
+    ) %>%
     mutate(description = case_when(
       description == "" ~ "N/A",
       TRUE ~ description
     ))
-  
-  
+
+
   #araGenes %>% filter_by_overlaps(snps, maxgap = distance)
 }
 
 # Find overlapping genes
 
-# This function takes a table as it comes out of limix and extracts the gene annotations that match the top n_hit SNPs from the arabidopsis genome.
+# This function takes a table as it comes out of read_gwas and extracts the gene annotations that overlap with
+# the top n_hit SNPs from the arabidopsis genome. Can be used for nearest matching by changing the distance parameter.
 # This function will assign araGenes in the Global Environment!
 
 get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
@@ -219,7 +199,7 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   }
   if(!require(plyranges)) {
     stop("Please install plyranges")
-  } 
+  }
   if(!require(biomaRt)) {
     stop("Please install bioMart")
   }
@@ -229,15 +209,15 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   require(plyranges)
   require(biomaRt)
   require(tidyverse)
-  # get annotation info from plants_mart 
+  # get annotation info from plants_mart
   if(!exists("araGenes")){
-    ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org') 
+    ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org')
     # Get genome, rename columns, make into granges
     araGenes <<- getBM(c("ensembl_gene_id",
-                         "chromosome_name", 
+                         "chromosome_name",
                          "start_position",
                          "end_position",
-                         "strand", 
+                         "strand",
                          "description",
                          "transcript_biotype"),
                        mart=ara) %>%
@@ -247,37 +227,30 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
                     start = start_position,
                     end = end_position) %>%
       dplyr::filter(str_detect(chromosome_name,"[1-9]")) %>%
-      dplyr::mutate(seqnames=paste0("Chr",chromosome_name)) %>% 
+      dplyr::mutate(seqnames=paste0("Chr",chromosome_name)) %>%
       as_granges()
   }
-  
-  
-  snp <- GWAS %>% 
+
+
+  snp <- GWAS %>%
     dplyr::arrange(desc(-log10(pv))) %>%
-    dplyr::slice(1:n_hit) %>% 
+    dplyr::slice(1:n_hit) %>%
     dplyr::mutate(seqnames = paste0("Chr", chrom),
                   start = pos,
                   end = pos,
-                  max_distance = distance) %>% 
-    tibble::rownames_to_column("SNP_rank") %>% 
-    as_granges() 
-  
-  join_overlap_inner(snp,araGenes, maxgap = distance) %>% 
-    plyranges::select(SNP_rank, chrom, pos, Significant, log10_p, mac, GeneId, max_distance, description, transcript_biotype, start_position, end_position, .drop_ranges = TRUE) %>% 
+                  max_distance = distance) %>%
+    tibble::rownames_to_column("SNP_rank") %>%
+    as_granges()
+
+  join_overlap_inner(snp,araGenes, maxgap = distance) %>%
+    plyranges::select(SNP_rank, chrom, pos, Significant, log10_p, mac, GeneId, max_distance, description, transcript_biotype, start_position, end_position, .drop_ranges = TRUE) %>%
     as_tibble()
-  
+
   #araGenes %>% filter_by_overlaps(snps, maxgap = distance)
 }
 
-# Get expression Values from arapheno; global asignment of Kawakatsu
-
-
-
-
-
-
-
 # Plot GWAS
+## Convenience function to plot manhattan plots, via ggplot2, using GMI branding
 
 plot_gwas <- function(x, title = "No Title", subtitle = NULL){
   color_gmi_light <- ("#abd976")
@@ -288,8 +261,8 @@ plot_gwas <- function(x, title = "No Title", subtitle = NULL){
     # geom_hline(linetype = "dotted", yintercept = bf_corr) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
     #  geom_label_repel(aes(x=pos, y= -log10(pv),label = gene), data = ft_specific_limix_mac5 %>% filter(gene != "NA")) +
-    theme_few() + 
-    #  geom_mark_rect(aes(filter = gene != 'NA', label = gene)) + 
+    theme_few() +
+    #  geom_mark_rect(aes(filter = gene != 'NA', label = gene)) +
     geom_point(aes(color = Significant)) +
     scale_color_manual(values = GWAS_colors) +
     #  ylab("-log10(p)") +
@@ -308,15 +281,15 @@ plot_gwas <- function(x, title = "No Title", subtitle = NULL){
     )
 }
 
-# Plot with annotations
+# Plot manhattan plot with annotations
 ## Defaults to only plotting overlapping annotations, can be toggled by "match_nearest = TRUE"
 
 
 plot_annotated_gwas <- function(gwas, title ="No Title", subtitle = NULL, nlabels = 5, labeltype = "GeneId", match_nearest = FALSE) {
   if(!match_nearest){
-    annotations <- gwas %>% get_overlapping_genes(nlabels) %>%  unite(labs, SNP_rank, labeltype, sep = " :") 
+    annotations <- gwas %>% get_overlapping_genes(nlabels) %>%  unite(labs, SNP_rank, labeltype, sep = " :")
   } else {
-    annotations <- gwas %>% get_nearest_genes(nlabels) %>%  unite(labs, SNP_rank, labeltype, sep = " :") 
+    annotations <- gwas %>% get_nearest_genes(nlabels) %>%  unite(labs, SNP_rank, labeltype, sep = " :")
   }
 
   color_gmi_light <- ("#abd976")
@@ -324,14 +297,14 @@ plot_annotated_gwas <- function(gwas, title ="No Title", subtitle = NULL, nlabel
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
-  gwas %>% 
-    filter(abs(log10_p) > 0.5) %>% 
+  gwas %>%
+    filter(abs(log10_p) > 0.5) %>%
     #Step 2: Plot
     ggplot(aes(x=pos, y=log10_p)) +
     geom_point(aes(color = Significant)) +
     geom_text_repel(aes(label = labs), data = annotations) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
-    theme_few() + 
+    theme_few() +
     scale_color_manual(values = GWAS_colors) +
     scale_y_continuous("-log10(pvalue)", breaks =  c(-2,-4,-6,-8, 2 ,4, 6, 8), labels =  c("2","4","6","8", "2","4","6","8")) +
     ggtitle(title, sub = subtitle) +
