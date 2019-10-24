@@ -15,15 +15,17 @@ Encoding: UTF-8
 LazyData: true
 biocViews:
 Imports:
-    tidyverse,
+    ggplot2,
+    tibble,
     ggthemes,
     ggrepel,
     biomaRt,
     leaflet,
-    biomaRt,
+    magrittr,
     ggbeeswarm,
     plyranges,
     httr,
+    stringr,
     qvalue,
     vroom,
     dplyr,
