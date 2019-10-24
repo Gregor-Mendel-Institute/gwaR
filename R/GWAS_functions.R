@@ -1,15 +1,6 @@
 # A collection of functions for working with GWAS tables
 # Niklas Schandry, Patrick Hüther 2019
 
-
-require(tidyverse)
-require(ggthemes)
-require(ggrepel)
-require(feather)
-require(biomaRt)
-require(plyranges)
-require(leaflet)
-
 #This function has no real purpose.
 
 format_gwas <- function(gwas){
@@ -19,7 +10,7 @@ format_gwas <- function(gwas){
   return(gwas_object)
 }
 
-#This function reads GWAS output from limix.
+#This function reads GWAS output from limix and puts it into a specific (somewhat arbitraty) format.
 
 read_gwas <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
@@ -135,21 +126,9 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
   if(is.null(GWAS)){
     stop("GWAS output missing")
   }
-  if(!require(plyranges)) {
-    stop("Please install plyranges")
-  }
-  if(!require(biomaRt)) {
-    stop("Please install biomaRt")
-  }
-  if(!require(tidyverse)) {
-    stop("Please install tidyverse")
-  }
-  require(plyranges)
-  require(biomaRt)
-  require(tidyverse)
   # get annotation info from plants_mart
   if(!exists("araGenes")){
-    ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org')
+    ara <- useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org')
     # Get genome, rename columns, make into granges
     araGenes <<- getBM(c("ensembl_gene_id",
                          "chromosome_name",
@@ -202,19 +181,7 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   if(is.null(GWAS)){
     stop("GWAS output file missing")
   }
-  if(!require(plyranges)) {
-    stop("Please install plyranges")
-  }
-  if(!require(biomaRt)) {
-    stop("Please install bioMart")
-  }
-  if(!require(tidyverse)) {
-    stop("Please install tidyverse")
-  }
-  require(plyranges)
-  require(biomaRt)
-  require(tidyverse)
-  # get annotation info from plants_mart
+# get annotation info from plants_mart
   if(!exists("araGenes")){
     ara <- biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org')
     # Get genome, rename columns, make into granges
