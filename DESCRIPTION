@@ -16,7 +16,6 @@ LazyData: true
 biocViews:
 Imports:
     ggplot2,
-    tibble,
     ggthemes,
     ggrepel,
     biomaRt,
@@ -32,3 +31,4 @@ Imports:
     readr,
     tibble,
     tidyr (>= 1.0.0)
+RoxygenNote: 6.1.1
