@@ -1,27 +1,34 @@
 Package: gwaR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: A collection of R functions to conduct GWAS analysis (in Arabidopsis thaliana) 
 Version: 0.1.0
-Author: Niklas Schandry, Patrick Hüther
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: c(
+  person("Niklas", "Schandry", email = "niklas.schandry@gmi.oeaw.ac.at", role = c("aut","cre")),
+  person("Patrick", "Hüther", email = "patrick.huether@gmi.oeaw.ac.at", role = c("aut"))
+  )
+Description: The 'gwaR' package is a collection of convenience functions to plot, inspect and analyse GWAS
+    results typically obtained from limix. It uses REST APIs from <http://tools.1001genomes.org/api/index.html>
+    to obtain annotations for SNPs and genes as well as gene expression data and is currently only useful for
+    Arabidopsis thaliana.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports:  
-  tidyverse, 
-  ggthemes, 
-  ggrepel, 
-  biomaRt, 
-  leaflet, 
-  biomaRt, 
-  ggbeeswarm, 
-  plyranges, 
-  httr, 
-  qvalue, 
-  vroom,
-  dplyr,
-  readr,
-  tibble
-
+biocViews:
+Imports:
+    ggplot2,
+    ggthemes,
+    ggrepel,
+    biomaRt,
+    leaflet,
+    magrittr,
+    ggbeeswarm,
+    plyranges,
+    httr,
+    stringr,
+    qvalue,
+    vroom,
+    dplyr,
+    readr,
+    tibble,
+    tidyr (>= 1.0.0)
+RoxygenNote: 6.1.1

@@ -1,2 +1,4 @@
-exportPattern("^[[:alpha:]]+")
 importFrom("stats", "filter")
+importFrom("dplyr", "%>%")
+importFrom("magrittr", "%<>%")
+import(ggplot2)
