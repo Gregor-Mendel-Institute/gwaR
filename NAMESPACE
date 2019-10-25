@@ -1,6 +1,7 @@
 importFrom("stats", "filter")
 importFrom("magrittr", "%>%")
 importFrom("magrittr", "%<>%")
+import(tidyverse)
 import(ggplot2)
 export(read_gwas,
        get_polymorph_acc,
