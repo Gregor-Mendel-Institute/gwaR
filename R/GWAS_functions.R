@@ -1,6 +1,7 @@
 # A collection of functions for working with GWAS tables
 # Niklas Schandry, Patrick Hüther 2019
 
+
 #This function has no real purpose.
 
 format_gwas <- function(gwas){
