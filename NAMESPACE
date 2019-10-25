@@ -1,4 +1,4 @@
 importFrom("stats", "filter")
-importFrom("dplyr", "%>%")
+importFrom("magrittr", "%>%")
 importFrom("magrittr", "%<>%")
 import(ggplot2)
