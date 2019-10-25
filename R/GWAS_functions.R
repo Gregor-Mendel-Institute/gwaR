@@ -169,7 +169,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
   }
   if(acc_col != "ACC_ID"){
     message("Adding ACC_ID column")
-    mutate(ACC_ID = eval(acc_col))
+    dplyr::mutate(ACC_ID = eval(acc_col))
   }
   phenotype_table %>%
     dplyr::select(ACC_ID, eval(phenotype)) %>%
@@ -190,7 +190,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
 
 intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID") {
   get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
-    mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
+    dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
                               TRUE ~ FALSE))
 }
 
