@@ -1,13 +1,10 @@
 # A collection of functions for working with GWAS tables
 # Niklas Schandry, Patrick Hüther 2019
 
-<<<<<<< HEAD
 
-#This function has no real purpose.
-=======
+
 #' This function has no real purpose.
 #' @param gwas A gwas result table
->>>>>>> fca5483109a1a28596e6f8925f0886d6a4dec098
 
 format_gwas <- function(gwas){
   gwas %<>% dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
@@ -367,7 +364,6 @@ plot_annotated_gwas <- function(gwas, title ="No Title", subtitle = NULL, nlabel
   } else {
     annotations <- gwas %>% get_nearest_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   }
-
   color_gmi_light <- ("#abd976")
   color_gmi_dark <- ("#007243")
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
