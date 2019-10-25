@@ -178,7 +178,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
     pivot_longer(matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
 }
 
-#' Based on a GeneID and a GWAS table and a rank, returns a table of expression values for that gene,
+#' Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
 #' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
@@ -195,6 +195,16 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
                               TRUE ~ FALSE))
 }
 
+#' Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
+#' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
+#' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param acc_col the column that contains accession identifiers.
+#' @seealso [get_phenotype()]
+#' @seealso [read_gwas()]
+#' @seealso [intersect_phenotype_snp()]
+
 plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID"){
   p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
@@ -210,14 +220,18 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
 
 
 
-# Finding nearest genes for GWAS hits
+#' Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified.
+#' This function always returns the closest annotation. To limit the lookup range use get_overlapping_genes()
+#' Lookup is done via ensembl plants; requires internet connection.
+#' !This function will assign araGenes in the Global Environment!
+#' @param gwas_table Object returned from read_gwas() function
+#' @param n_hit The number of SNPs that should be looked up.
+#' @seealso [read_gwas()]
+#' @seealso [get_overlapping_genes()]
 
-# This function takes a table as it comes out of read_gwas and extracts the gene annotations that match the top n_hit SNPs
-# from the arabidopsis genome.
-# This function will assign araGenes in the Global Environment!
 
-get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
-  if(is.null(GWAS)){
+get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
+  if(is.null(gwas_table)){
     stop("GWAS output missing")
   }
   # get annotation info from plants_mart
@@ -243,7 +257,7 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
   }
 
 
-  snp <- GWAS %>%
+  snp <- gwas_table %>%
     dplyr::arrange(dplyr::desc(-log10(pv))) %>%
     dplyr::slice(1:n_hit) %>%
     dplyr::mutate(seqnames = paste0("Chr", chrom),
@@ -272,11 +286,15 @@ get_nearest_genes <- function(GWAS = NULL, n_hit = 1){
   #araGenes %>% filter_by_overlaps(snps, maxgap = distance)
 }
 
-# Find overlapping genes
-
-# This function takes a table as it comes out of read_gwas and extracts the gene annotations that overlap with
-# the top n_hit SNPs from the arabidopsis genome. Can be used for nearest matching by changing the distance parameter.
-# This function will assign araGenes in the Global Environment!
+#' Based on a GWAS table, returns the gene annotation that is overlapping with each SNP for the number of SNP specified.
+#' If there is no overlap, the SNP is returned, but the GeneID column is empty.
+#' Lookup is done via ensembl plants; requires internet connection.
+#' !This function will assign araGenes in the Global Environment!
+#' @param gwas_table Object returned from read_gwas() function
+#' @param n_hit The number of SNPs that should be looked up.
+#' @param distance The maximum distance from SNP to annotation, can be varied to lookup genes within a specific distance
+#' @seealso [read_gwas()]
+#' @seealso [get_nearest_genes()]
 
 get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   if(is.null(GWAS)){
@@ -322,15 +340,19 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   #araGenes %>% filter_by_overlaps(snps, maxgap = distance)
 }
 
-# Plot GWAS
-## Convenience function to plot manhattan plots, via ggplot2, using GMI branding
+#' Based on a GWAS table, generates a manhatten plot.
+#' For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
+#' @param gwas_table Object returned from read_gwas() function
+#' @seealso [read_gwas()]
+#' @seealso [plot_annotated_gwas()]
 
-plot_gwas <- function(x, title = "No Title", subtitle = NULL){
+
+plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter = 2){
   color_gmi_light <- ("#abd976")
   color_gmi_dark <- ("#007243")
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
-  ggplot(aes(x=pos, y=log10_p), data = x) +
+  ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > 2)) +
     # geom_hline(linetype = "dotted", yintercept = bf_corr) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
     #  geom_label_repel(aes(x=pos, y= -log10(pv),label = gene), data = ft_specific_limix_mac5 %>% filter(gene != "NA")) +
