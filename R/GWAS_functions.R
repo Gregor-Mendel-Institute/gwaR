@@ -135,6 +135,49 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank){
 }
 
 
+#################
+# Below are functions that are generalizations of the expression specific functions.
+# They use a phenotype table, which comes in wide format and extract phenotype values.
+# These phenotypes are matched to a specific SNP in a GWAS table with intersect_phenotype_snp, giving a presence | abscence factor
+# Plotting is available via plot_intersect_phenotype_snp.
+#################
+
+#get_phenotype is a more general version of get_expression, that works with custom phenotype tables, in wide format.
+
+get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
+  if(!paste(phenotype) %in% colnames(phenotype_table)){
+    stop(paste0("No data in the phenotype table for: ", phenotype))
+  }
+  if(acc_col != "ACC_ID"){
+    message("Adding ACC_ID column")
+    mutate(ACC_ID = eval(acc_col))
+  }
+  phenotype_table %>%
+    dplyr::select(ACC_ID, eval(phenotype)) %>%
+    pivot_longer(matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
+}
+
+intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID") {
+  get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
+    mutate(hasSNP = case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
+                              TRUE ~ FALSE))
+}
+
+plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID"){
+  p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank) %>%
+    ggplot(aes(x = hasSNP, y = phenotype_value)) +
+    geom_boxplot(aes(fill = hasSNP)) +
+    ggbeeswarm::geom_beeswarm(alpha = 0.3) +
+    labs(title = paste0("Phenotype values by SNP presence"),
+         x = "SNP present",
+         y = "Value") +
+    theme_bw() +
+    facet_wrap(~Phenotype)
+  print(p)
+}
+
+
+
 # Finding nearest genes for GWAS hits
 
 # This function takes a table as it comes out of read_gwas and extracts the gene annotations that match the top n_hit SNPs
