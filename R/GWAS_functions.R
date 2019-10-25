@@ -173,7 +173,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
   }
   phenotype_table %>%
     dplyr::select(ACC_ID, eval(phenotype)) %>%
-    pivot_longer(matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
+    tidyr::pivot_longer(matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
 }
 
 #' Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
