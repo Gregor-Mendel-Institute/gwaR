@@ -2,16 +2,13 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{get_expression}
 \alias{get_expression}
-\title{Query the AraPheno API to get expression data for a gene of interest}
+\title{Get expression data for a gene of interest}
 \usage{
 get_expression(GeneID)
 }
 \arguments{
-\item{GeneID}{An Arabidopsis gene identifier}
+\item{GeneID}{An Arabidopsis thaliana gene identifier}
 }
 \description{
-Query the AraPheno API to get expression data for a gene of interest
-}
-\examples{
-get_expression("AT4G21940")
+Get expression data for a gene of interest
 }

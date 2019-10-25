@@ -78,8 +78,6 @@ plot_acc_map <- function(gwas_table, SNPrank){
 
 #' Get expression data for a gene of interest
 #' @param GeneID An Arabidopsis thaliana gene identifier
-#' @examples
-#' get_expression("AT4G21940")
 
 get_expression <- function(GeneID){
   if(!exists("Kawakatsu_dat")){
@@ -296,7 +294,7 @@ get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
 #' @seealso [read_gwas()]
 #' @seealso [get_nearest_genes()]
 
-get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
+get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
   if(is.null(GWAS)){
     stop("GWAS output file missing")
   }
@@ -323,7 +321,7 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
   }
 
 
-  snp <- GWAS %>%
+  snp <- gwas_table %>%
     dplyr::arrange(dplyr::desc(-log10(pv))) %>%
     dplyr::slice(1:n_hit) %>%
     dplyr::mutate(seqnames = paste0("Chr", chrom),
@@ -398,7 +396,7 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
 #' @seealso [find_overlapping_genes()]
 
 
-plot_annotated_gwas <- function(gwas,
+plot_annotated_gwas <- function(gwas_table,
                                 title ="No Title",
                                 subtitle = NULL,
                                 nlabels = 5,
@@ -407,16 +405,16 @@ plot_annotated_gwas <- function(gwas,
                                 p_filter = 2,
                                 mac_filter = 0) {
   if(!match_nearest){
-    annotations <- gwas %>% get_overlapping_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
+    annotations <- gwas_table %>% get_overlapping_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   } else {
-    annotations <- gwas %>% get_nearest_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
+    annotations <- gwas_table %>% get_nearest_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   }
   color_gmi_light <- ("#abd976")
   color_gmi_dark <- ("#007243")
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
-  gwas %>%
+  gwas_table %>%
     filter(abs(log10_p) > p_filter, mac > mac_filter) %>%
     #Step 2: Plot
     ggplot(aes(x=pos, y=log10_p)) +

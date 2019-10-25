@@ -9,7 +9,7 @@ plot_acc_map(gwas_table, SNPrank)
 \arguments{
 \item{gwas_table}{Object returned from read_gwas() function}
 
-\item{SNPrank}{The (significance) rank of the SNP of interest}
+\item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 }
 \description{
 Plot an interactive map of accessions that carry a SNP of interest

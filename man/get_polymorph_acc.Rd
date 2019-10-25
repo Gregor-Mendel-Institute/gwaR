@@ -9,7 +9,7 @@ get_polymorph_acc(gwas_table, SNPrank)
 \arguments{
 \item{gwas_table}{Object returned from read_gwas() function}
 
-\item{SNPrank}{The (significance) rank of the SNP of interest}
+\item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 }
 \description{
 Query the 1001genomes API to obtain accession ids that carry a SNP of interest
