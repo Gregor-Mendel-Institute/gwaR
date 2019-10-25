@@ -27,7 +27,8 @@ read_gwas <- function(gwas_path){
   fdr_corr <- qvalue::qvalue(p = gwas_object$pv)
   fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05 )]) %>% max() %>% log10() %>% abs()
   bf_corr <- (0.05/nrow(gwas_object)) %>% log10() %>% abs()
-  gwas_object %<>% dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
+  gwas_object %<>%
+    dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
                           Significant = dplyr::case_when(-log10(pv) > bf_corr ~ "Bonferroni",
                                                          -log10(pv) > fdr_thresh ~ "FDR",
                                                          TRUE ~ "Not"),
@@ -38,14 +39,14 @@ read_gwas <- function(gwas_path){
                                                    grepl(pattern = "_common_", gwas_path) ~ "common",
                                                    grepl(pattern = "_any_", gwas_path) ~ "any",
                                                    TRUE ~ "Unknown"
-                          )
-  )
+                          )) %>%
+    dplyr::arrange(dplyr::desc(log10_p))
   return(gwas_object)
 }
 
 #' Query the 1001genomes API to obtain accession ids that carry a SNP of interest
 #' @param gwas_table Object returned from read_gwas() function
-#' @param SNPrank The (significance) rank of the SNP of interest
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso [read_gwas()]
 
 get_polymorph_acc <- function(gwas_table, SNPrank){
@@ -62,7 +63,7 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
 
 #' Plot an interactive map of accessions that carry a SNP of interest
 #' @param gwas_table Object returned from read_gwas() function
-#' @param SNPrank The (significance) rank of the SNP of interest
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso [read_gwas()]
 
 plot_acc_map <- function(gwas_table, SNPrank){
@@ -78,8 +79,8 @@ plot_acc_map <- function(gwas_table, SNPrank){
                                 stroke=FALSE, radius=5, fillOpacity=0.8, color="#007243")
 }
 
-#' Query the AraPheno API to get expression data for a gene of interest
-#' @param GeneID An Arabidopsis gene identifier
+#' Get expression data for a gene of interest
+#' @param GeneID An Arabidopsis thaliana gene identifier
 #' @examples
 #' get_expression("AT4G21940")
 
@@ -97,8 +98,13 @@ get_expression <- function(GeneID){
       tidyr::pivot_longer(dplyr::starts_with("AT"), names_to = "GeneID", values_to = "phenotype_value")
 }
 
-# Based on a GeneID and a SNPtable, returns a table of expression values for that gene,
-# where accessions that contain SNP have TRUE in hasSNP
+#' Based on a GeneID and a GWAS table and a rank, returns a table of expression values for that gene,
+#' where accessions that contain the SNP have TRUE in hasSNP
+#' @param GeneID An Arabidopsis thaliana gene identifier
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @seealso [get_expression()]
+#' @seealso [read_gwas()]
 
 intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
   get_expression(GeneID) %>%
@@ -106,7 +112,13 @@ intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
                                             TRUE ~ FALSE))
 }
 
-# Better than the above, simply works with a GWAS table and the rank, makes use of get_nearest_genes to find closest gene.
+#' Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
+#' where accessions that contain the SNP have TRUE in hasSNP
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @seealso [read_gwas()]
+#' @seealso [get_expression()]
+#' @seealso [get_nearest_genes()]
 
 retrieve_counts <- function(gwas_table, SNPrank){
   genes <- get_nearest_genes(gwas_table, SNPrank) %>%
@@ -117,7 +129,14 @@ retrieve_counts <- function(gwas_table, SNPrank){
                                              TRUE ~ FALSE))
 }
 
-# Convenience quick plot, using data from retrieve_counts
+#' Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
+#' where accessions that contain the SNP have TRUE in hasSNP
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @seealso [read_gwas()]
+#' @seealso [get_expression()]
+#' @seealso [get_nearest_genes()]
+#' @seealso [retrieve_counts()]
 
 plot_intersect_expression_snp <- function(gwas_table, SNPrank){
 
@@ -144,6 +163,11 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank){
 
 #get_phenotype is a more general version of get_expression, that works with custom phenotype tables, in wide format.
 
+#' Subset a larger wide-format phenotype table to a specific phenotype
+#' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
+#' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
+#' @param acc_col the column that contains accession identifiers.
+
 get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
   if(!paste(phenotype) %in% colnames(phenotype_table)){
     stop(paste0("No data in the phenotype table for: ", phenotype))
@@ -156,6 +180,17 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
     dplyr::select(ACC_ID, eval(phenotype)) %>%
     pivot_longer(matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
 }
+
+#' Based on a GeneID and a GWAS table and a rank, returns a table of expression values for that gene,
+#' where accessions that contain the SNP have TRUE in hasSNP
+#' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
+#' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
+#' @param gwas_table Object returned from read_gwas() function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param acc_col the column that contains accession identifiers.
+#' @seealso [get_phenotype()]
+#' @seealso [read_gwas()]
+#' @seealso [intersect_expression_snp()]
 
 intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID") {
   get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
