@@ -343,16 +343,21 @@ get_overlapping_genes <- function(GWAS = NULL, n_hit = 1, distance = -1){
 #' Based on a GWAS table, generates a manhatten plot.
 #' For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
 #' @param gwas_table Object returned from read_gwas() function
+#' @param title Specify plot title
+#' @param subtitle Specify plot subtitle
+#' @param p_filter everything with a log10(p) below this value will not be included in the plot
+#' @param mac_filter everything with a mac (minor allele count) below this will not be plotted.
 #' @seealso [read_gwas()]
 #' @seealso [plot_annotated_gwas()]
 
 
-plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter = 2){
+
+plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter = 2, mac_filter = 0 ){
   color_gmi_light <- ("#abd976")
   color_gmi_dark <- ("#007243")
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
-  ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > 2)) +
+  ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > p_filter, mac > mac_filter)) +
     # geom_hline(linetype = "dotted", yintercept = bf_corr) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
     #  geom_label_repel(aes(x=pos, y= -log10(pv),label = gene), data = ft_specific_limix_mac5 %>% filter(gene != "NA")) +
@@ -376,11 +381,31 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
     )
 }
 
-# Plot manhattan plot with annotations
-## Defaults to only plotting overlapping annotations, can be toggled by "match_nearest = TRUE"
+#' Based on a GWAS table, generates a manhatten plot, with gene annotations. Number of annotations can be toggled
+#' by changing nlabels. By default only plots annotations for SNPs that are within a gene annotation.
+#' For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
+#' @param gwas_table Object returned from read_gwas() function
+#' @param title Specify plot title
+#' @param subtitle Specify plot subtitle
+#' @param nlabels How many labels should be plotted (default: 5)
+#' @param labeltype Which entry from the lookup should be displayed (character, defaults to "GeneId"). Options: SNP_rank, chrom, pos, Significant, log10_p, mac, GeneId, max_distance, description, transcript_biotype, start_position, end_position.
+#' @param match_nearest Defaults to FALSE; if TRUE will use find_nearest_genes instead of find_overlapping_genes for annotations
+#' @param p_filter everything with a log10(p) below this value will not be included in the plot (default: 2)
+#' @param mac_filter everything with a mac (minor allele count) below this will not be plotted.
+#' @seealso [read_gwas()]
+#' @seealso [plot_annotated_gwas()]
+#' @seealso [find_nearest_genes()]
+#' @seealso [find_overlapping_genes()]
 
 
-plot_annotated_gwas <- function(gwas, title ="No Title", subtitle = NULL, nlabels = 5, labeltype = "GeneId", match_nearest = FALSE) {
+plot_annotated_gwas <- function(gwas,
+                                title ="No Title",
+                                subtitle = NULL,
+                                nlabels = 5,
+                                labeltype = "GeneId",
+                                match_nearest = FALSE,
+                                p_filter = 2,
+                                mac_filter = 0) {
   if(!match_nearest){
     annotations <- gwas %>% get_overlapping_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   } else {
@@ -392,7 +417,7 @@ plot_annotated_gwas <- function(gwas, title ="No Title", subtitle = NULL, nlabel
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
   gwas %>%
-    filter(abs(log10_p) > 0.5) %>%
+    filter(abs(log10_p) > p_filter, mac > mac_filter) %>%
     #Step 2: Plot
     ggplot(aes(x=pos, y=log10_p)) +
     geom_point(aes(color = Significant)) +
