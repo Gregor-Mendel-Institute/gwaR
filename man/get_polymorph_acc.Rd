@@ -15,5 +15,5 @@ get_polymorph_acc(gwas_table, SNPrank)
 Query the 1001genomes API to obtain accession ids that carry a SNP of interest
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 }

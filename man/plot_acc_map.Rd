@@ -15,5 +15,5 @@ plot_acc_map(gwas_table, SNPrank)
 Plot an interactive map of accessions that carry a SNP of interest
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 }

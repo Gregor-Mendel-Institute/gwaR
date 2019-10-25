@@ -33,11 +33,11 @@ by changing nlabels. By default only plots annotations for SNPs that are within 
 For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[plot_annotated_gwas()]
+\code{\link{plot_gwas}}
 
-[find_nearest_genes()]
+\code{\link{get_nearest_genes}}
 
-[find_overlapping_genes()]
+\code{\link{get_overlapping_genes}}
 }

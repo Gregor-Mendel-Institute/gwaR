@@ -21,7 +21,7 @@ Lookup is done via ensembl plants; requires internet connection.
 !This function will assign araGenes in the Global Environment!
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[get_overlapping_genes()]
+\code{\link{get_overlapping_genes}}
 }

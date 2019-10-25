@@ -44,7 +44,7 @@ read_gwas <- function(gwas_path){
 #' Query the 1001genomes API to obtain accession ids that carry a SNP of interest
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso [read_gwas()]
+#' @seealso \code{\link{read_gwas}}
 
 get_polymorph_acc <- function(gwas_table, SNPrank){
   return(gwas_table %>%
@@ -61,7 +61,7 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
 #' Plot an interactive map of accessions that carry a SNP of interest
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso [read_gwas()]
+#' @seealso \code{\link{read_gwas}}
 
 plot_acc_map <- function(gwas_table, SNPrank){
   allAccessions <- readr::read_csv("~/labshare/lab/accessions/1001genomes-accessions.csv")
@@ -98,8 +98,8 @@ get_expression <- function(GeneID){
 #' @param GeneID An Arabidopsis thaliana gene identifier
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso [get_expression()]
-#' @seealso [read_gwas()]
+#' @seealso  \code{\link{get_expression}}
+#' @seealso  \code{\link{read_gwas}}
 
 intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
   get_expression(GeneID) %>%
@@ -111,9 +111,9 @@ intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso [read_gwas()]
-#' @seealso [get_expression()]
-#' @seealso [get_nearest_genes()]
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_expression}}
+#' @seealso \code{\link{get_nearest_genes}}
 
 retrieve_counts <- function(gwas_table, SNPrank){
   genes <- get_nearest_genes(gwas_table, SNPrank) %>%
@@ -128,10 +128,10 @@ retrieve_counts <- function(gwas_table, SNPrank){
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso [read_gwas()]
-#' @seealso [get_expression()]
-#' @seealso [get_nearest_genes()]
-#' @seealso [retrieve_counts()]
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_expression}}
+#' @seealso \code{\link{get_nearest_genes}}
+#' @seealso \code{\link{retrieve_counts}}
 
 plot_intersect_expression_snp <- function(gwas_table, SNPrank){
 
@@ -183,9 +183,10 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
-#' @seealso [get_phenotype()]
-#' @seealso [read_gwas()]
-#' @seealso [intersect_expression_snp()]
+#' @seealso \code{\link{get_phenotype}}
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{intersect_expression_snp}}
+
 
 intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID") {
   get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
@@ -199,9 +200,9 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
-#' @seealso [get_phenotype()]
-#' @seealso [read_gwas()]
-#' @seealso [intersect_phenotype_snp()]
+#' @seealso \code{\link{get_phenotype}}
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{intersect_phenotype_snp}}
 
 plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID"){
   p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank) %>%
@@ -224,8 +225,9 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
 #' !This function will assign araGenes in the Global Environment!
 #' @param gwas_table Object returned from read_gwas() function
 #' @param n_hit The number of SNPs that should be looked up.
-#' @seealso [read_gwas()]
-#' @seealso [get_overlapping_genes()]
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_overlapping_genes}}
+
 
 
 get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
@@ -291,8 +293,9 @@ get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
 #' @param gwas_table Object returned from read_gwas() function
 #' @param n_hit The number of SNPs that should be looked up.
 #' @param distance The maximum distance from SNP to annotation, can be varied to lookup genes within a specific distance
-#' @seealso [read_gwas()]
-#' @seealso [get_nearest_genes()]
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_nearest_genes}}
+
 
 get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
   if(is.null(GWAS)){
@@ -345,8 +348,8 @@ get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
 #' @param subtitle Specify plot subtitle
 #' @param p_filter everything with a log10(p) below this value will not be included in the plot
 #' @param mac_filter everything with a mac (minor allele count) below this will not be plotted.
-#' @seealso [read_gwas()]
-#' @seealso [plot_annotated_gwas()]
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{plot_annotated_gwas}}
 
 
 
@@ -390,11 +393,10 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
 #' @param match_nearest Defaults to FALSE; if TRUE will use find_nearest_genes instead of find_overlapping_genes for annotations
 #' @param p_filter everything with a log10(p) below this value will not be included in the plot (default: 2)
 #' @param mac_filter everything with a mac (minor allele count) below this will not be plotted.
-#' @seealso [read_gwas()]
-#' @seealso [plot_annotated_gwas()]
-#' @seealso [find_nearest_genes()]
-#' @seealso [find_overlapping_genes()]
-
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{plot_gwas}}
+#' @seealso \code{\link{get_nearest_genes}}
+#' @seealso \code{\link{get_overlapping_genes}}
 
 plot_annotated_gwas <- function(gwas_table,
                                 title ="No Title",

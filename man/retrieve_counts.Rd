@@ -17,9 +17,9 @@ Based on a GWAS table and a rank, returns a table of expression values for the g
 where accessions that contain the SNP have TRUE in hasSNP
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[get_expression()]
+\code{\link{get_expression}}
 
-[get_nearest_genes()]
+\code{\link{get_nearest_genes}}
 }

@@ -22,9 +22,9 @@ plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
 Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
 }
 \seealso{
-[get_phenotype()]
+\code{\link{get_phenotype}}
 
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[intersect_phenotype_snp()]
+\code{\link{intersect_phenotype_snp}}
 }

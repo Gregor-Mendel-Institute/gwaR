@@ -2,3 +2,17 @@ importFrom("stats", "filter")
 importFrom("magrittr", "%>%")
 importFrom("magrittr", "%<>%")
 import(ggplot2)
+export(read_gwas,
+       get_polymorph_acc,
+       plot_acc_map,
+       get_expression,
+       intersect_expression_snp,
+       retrieve_counts,
+       plot_intersect_expression_snp,
+       get_phenotype,
+       intersect_phenotype_snp,
+       plot_intersect_phenotype_snp,
+       get_nearest_genes,
+       get_overlapping_genes,
+       plot_gwas,
+       plot_annotated_gwas)

@@ -19,7 +19,7 @@ Based on a GeneID and a GWAS table and a rank, returns a table of expression val
 where accessions that contain the SNP have TRUE in hasSNP
 }
 \seealso{
-[get_expression()]
+\code{\link{get_expression}}
 
-[read_gwas()]
+\code{\link{read_gwas}}
 }

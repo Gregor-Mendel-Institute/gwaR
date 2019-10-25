@@ -24,9 +24,9 @@ Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, retur
 where accessions that contain the SNP have TRUE in hasSNP
 }
 \seealso{
-[get_phenotype()]
+\code{\link{get_phenotype}}
 
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[intersect_expression_snp()]
+\code{\link{intersect_expression_snp}}
 }

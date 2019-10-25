@@ -24,7 +24,7 @@ Based on a GWAS table, generates a manhatten plot.
 For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
 }
 \seealso{
-[read_gwas()]
+\code{\link{read_gwas}}
 
-[plot_annotated_gwas()]
+\code{\link{plot_annotated_gwas}}
 }
