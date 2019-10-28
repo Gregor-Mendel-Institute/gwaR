@@ -226,6 +226,7 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
          y = "Value") +
     theme_bw() +
     facet_grid(vars(eval(specific),Phenotype))
+
   print(p)
 }
 
