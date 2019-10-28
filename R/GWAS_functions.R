@@ -66,7 +66,7 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
 plot_acc_map <- function(gwas_table, SNPrank){
   allAccessions <- readr::read_csv("~/labshare/lab/accessions/1001genomes-accessions.csv")
   allAccessions %>%
-    filter(id %in% get_polymorph_acc(gwas_table, SNPrank)$strain) %>%
+    dplyr::filter(id %in% get_polymorph_acc(gwas_table, SNPrank)$strain) %>%
     leaflet::leaflet(data=.) %>%
       leaflet::addTiles() %>%
       leaflet::addCircleMarkers(lng=~longitude,
