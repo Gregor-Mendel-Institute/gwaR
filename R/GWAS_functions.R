@@ -428,7 +428,8 @@ plot_annotated_gwas <- function(gwas_table,
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
   gwas_table %>%
-    filter(abs(log10_p) > p_filter, mac > mac_filter) %>%
+    filter(abs(log10_p) > p_filter) %>%
+    filter(mac > mac_filter) %>%
     #Step 2: Plot
     ggplot(aes(x=pos, y=log10_p)) +
     geom_point(aes(color = Significant)) +
