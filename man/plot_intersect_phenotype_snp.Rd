@@ -5,7 +5,7 @@
 \title{Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.}
 \usage{
 plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
-  SNPrank, acc_col = "ACC_ID")
+  SNPrank, acc_col = "ACC_ID", specific = NULL)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}

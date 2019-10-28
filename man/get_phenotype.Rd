@@ -2,9 +2,11 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{get_phenotype}
 \alias{get_phenotype}
-\title{Subset a larger wide-format phenotype table to a specific phenotype}
+\title{Subset a larger wide-format phenotype table to a defined phenotype.
+Optionally includes a "specific" variable.}
 \usage{
-get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID")
+get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID",
+  specific = NULL)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}
@@ -12,7 +14,10 @@ get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID")
 \item{phenotype}{a specific phenotype from the phenotype table. Must match to a column name of the phenotype table}
 
 \item{acc_col}{the column that contains accession identifiers.}
+
+\item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
 }
 \description{
-Subset a larger wide-format phenotype table to a specific phenotype
+Subset a larger wide-format phenotype table to a defined phenotype.
+Optionally includes a "specific" variable.
 }
