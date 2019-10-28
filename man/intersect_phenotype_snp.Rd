@@ -2,11 +2,12 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{intersect_phenotype_snp}
 \alias{intersect_phenotype_snp}
-\title{Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
+\title{Get intersection between phenotype, and variant tale.
+Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
 where accessions that contain the SNP have TRUE in hasSNP}
 \usage{
 intersect_phenotype_snp(phenotype_table, phenotype, gwas_table, SNPrank,
-  acc_col = "ACC_ID")
+  acc_col = "ACC_ID", specific = NULL)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}
@@ -20,6 +21,7 @@ intersect_phenotype_snp(phenotype_table, phenotype, gwas_table, SNPrank,
 \item{acc_col}{the column that contains accession identifiers.}
 }
 \description{
+Get intersection between phenotype, and variant tale.
 Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
 where accessions that contain the SNP have TRUE in hasSNP
 }

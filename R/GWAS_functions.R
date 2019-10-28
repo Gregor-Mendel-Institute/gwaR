@@ -158,12 +158,14 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank){
 
 #get_phenotype is a more general version of get_expression, that works with custom phenotype tables, in wide format.
 
-#' Subset a larger wide-format phenotype table to a specific phenotype
+#' Subset a larger wide-format phenotype table to a defined phenotype.
+#' Optionally includes a "specific" variable.
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
 #' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
 #' @param acc_col the column that contains accession identifiers.
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
 
-get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
+get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specific = NULL){
   if(!paste(phenotype) %in% colnames(phenotype_table)){
     stop(paste0("No data in the phenotype table for: ", phenotype))
   }
@@ -171,11 +173,19 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
     message("Adding ACC_ID column")
     dplyr::mutate(ACC_ID = eval(acc_col))
   }
+  if(is.null(specific)){
   phenotype_table %>%
     dplyr::select(ACC_ID, eval(phenotype)) %>%
     tidyr::pivot_longer(tidyselect::matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
+  } else {
+  phenotype_table %>%
+      dplyr::select(ACC_ID, eval(phenotype), eval(specific)) %>%
+      tidyr::pivot_longer(tidyselect::matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
+  }
+
 }
 
+#' Get intersection between phenotype, and variant tale.
 #' Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
@@ -183,13 +193,14 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID"){
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
 #' @seealso \code{\link{get_phenotype}}
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{intersect_expression_snp}}
 
 
-intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID") {
-  get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
+intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL) {
+  get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
     dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
                               TRUE ~ FALSE))
 }
@@ -200,12 +211,13 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
 #' @seealso \code{\link{get_phenotype}}
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{intersect_phenotype_snp}}
 
-plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID"){
-  p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank) %>%
+plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL){
+  p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank, specific) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
     ggbeeswarm::geom_beeswarm(alpha = 0.3) +
@@ -213,10 +225,9 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
          x = "SNP present",
          y = "Value") +
     theme_bw() +
-    facet_wrap(~Phenotype)
+    facet_wrap(eval(specific)~Phenotype)
   print(p)
 }
-
 
 
 #' Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified.
