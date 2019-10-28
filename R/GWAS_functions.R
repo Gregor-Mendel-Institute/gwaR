@@ -217,7 +217,7 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @seealso \code{\link{intersect_phenotype_snp}}
 
 plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL){
-  p <-  intersect_phenotype_snp(phenotype_table,phenotype , gwas_table, SNPrank, specific) %>%
+  p <-  intersect_phenotype_snp(phenotype_table, phenotype , gwas_table, SNPrank, specific = specific)  %T>% print %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
     ggbeeswarm::geom_beeswarm(alpha = 0.3) +
@@ -225,7 +225,7 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
          x = "SNP present",
          y = "Value") +
     theme_bw() +
-    facet_grid(reformulate("Phenotype", specific)) #????
+    facet_grid(reformulate( specific, "Phenotype")) #????
   print(p)
 }
 
