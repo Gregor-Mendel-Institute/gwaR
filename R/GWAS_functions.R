@@ -171,7 +171,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specif
   }
   if(acc_col != "ACC_ID"){
     message("Adding ACC_ID column")
-    dplyr::mutate(ACC_ID = eval(acc_col))
+    dplyr::mutate(ACC_ID = eval(acc_col), .data = phenotype_table)
   }
   if(is.null(specific)){
   phenotype_table %>%
