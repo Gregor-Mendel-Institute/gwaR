@@ -309,7 +309,7 @@ get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
 
 
 get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
-  if(is.null(GWAS)){
+  if(is.null(gwas_table)){
     stop("GWAS output file missing")
   }
 # get annotation info from plants_mart
