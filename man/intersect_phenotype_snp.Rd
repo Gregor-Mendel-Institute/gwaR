@@ -19,6 +19,8 @@ intersect_phenotype_snp(phenotype_table, phenotype, gwas_table, SNPrank,
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
 \item{acc_col}{the column that contains accession identifiers.}
+
+\item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
 }
 \description{
 Get intersection between phenotype, and variant tale.

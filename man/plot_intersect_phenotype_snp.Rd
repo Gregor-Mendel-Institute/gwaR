@@ -17,6 +17,8 @@ plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
 \item{acc_col}{the column that contains accession identifiers.}
+
+\item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
 }
 \description{
 Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
