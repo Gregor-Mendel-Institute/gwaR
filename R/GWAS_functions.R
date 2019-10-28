@@ -369,7 +369,7 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
   color_gmi_dark <- ("#007243")
   GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
-  ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > p_filter, mac > mac_filter)) +
+  ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > p_filter) %>% dplyr::filter(mac > mac_filter)) +
     # geom_hline(linetype = "dotted", yintercept = bf_corr) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
     #  geom_label_repel(aes(x=pos, y= -log10(pv),label = gene), data = ft_specific_limix_mac5 %>% filter(gene != "NA")) +
@@ -428,8 +428,8 @@ plot_annotated_gwas <- function(gwas_table,
   names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
   gwas_table %>%
-    filter(abs(log10_p) > p_filter) %>%
-    filter(mac > mac_filter) %>%
+    dplyr::filter(abs(log10_p) > p_filter) %>%
+    dplyr::filter(mac > mac_filter) %>%
     #Step 2: Plot
     ggplot(aes(x=pos, y=log10_p)) +
     geom_point(aes(color = Significant)) +
