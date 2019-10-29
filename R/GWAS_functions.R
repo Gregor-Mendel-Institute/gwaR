@@ -133,12 +133,16 @@ retrieve_counts <- function(gwas_table, SNPrank){
 #' @seealso \code{\link{get_nearest_genes}}
 #' @seealso \code{\link{retrieve_counts}}
 
-plot_intersect_expression_snp <- function(gwas_table, SNPrank){
-
+plot_intersect_expression_snp <- function(gwas_table, SNPrank, nobees = FALSE){
+  if(nobees){
+    overplot_geom <- geom_point(alpha = 0.3)
+  } else{
+    overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
+  }
   p <-  retrieve_counts(gwas_table, SNPrank) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
-    ggbeeswarm::geom_beeswarm(alpha = 0.3) +
+    overplot_geom +
     labs(title = paste0("Expression of nearest gene by SNP presence"),
          caption = "Expression data from araPheno",
          x = "SNP present",
@@ -216,11 +220,17 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{intersect_phenotype_snp}}
 
-plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL){
+plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL, nobees = FALSE){
+  if(nobees){
+    overplot_geom <- geom_point(alpha = 0.3)
+  } else{
+    overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
+  }
+
   p <-  intersect_phenotype_snp(phenotype_table, phenotype , gwas_table, SNPrank, specific = specific)  %T>% print %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
-    ggbeeswarm::geom_beeswarm(alpha = 0.3) +
+    overplot_geom +
     labs(title = paste0("Phenotype values by SNP presence"),
          x = "SNP present",
          y = "Value") +
