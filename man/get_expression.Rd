@@ -4,10 +4,12 @@
 \alias{get_expression}
 \title{Get expression data for a gene of interest}
 \usage{
-get_expression(GeneID)
+get_expression(GeneID = NULL, study = 52, list_studies = FALSE)
 }
 \arguments{
 \item{GeneID}{An Arabidopsis thaliana gene identifier}
+
+\item{study}{(default 52) the study of interest at arapheno, see list here}
 }
 \description{
 Get expression data for a gene of interest
