@@ -5,7 +5,7 @@
 \title{Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.}
 \usage{
 plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
-  SNPrank, acc_col = "ACC_ID", specific = NULL)
+  SNPrank, acc_col = "ACC_ID", specific = NULL, nobees = FALSE)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}
@@ -19,6 +19,8 @@ plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
 \item{acc_col}{the column that contains accession identifiers.}
 
 \item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
+
+\item{nobees}{Set to true to disable beeswarm geom}
 }
 \description{
 Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.

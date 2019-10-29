@@ -128,6 +128,7 @@ retrieve_counts <- function(gwas_table, SNPrank){
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param gwas_table Object returned from read_gwas() function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param nobees Set to true to disable beeswarm geom
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{get_expression}}
 #' @seealso \code{\link{get_nearest_genes}}
@@ -216,6 +217,7 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
 #' @param specific (optional) treatment column that was used to split samples for specific GWAS.
+#' @param nobees Set to true to disable beeswarm geom
 #' @seealso \code{\link{get_phenotype}}
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{intersect_phenotype_snp}}

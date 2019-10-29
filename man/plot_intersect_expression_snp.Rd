@@ -5,12 +5,14 @@
 \title{Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
 where accessions that contain the SNP have TRUE in hasSNP}
 \usage{
-plot_intersect_expression_snp(gwas_table, SNPrank)
+plot_intersect_expression_snp(gwas_table, SNPrank, nobees = FALSE)
 }
 \arguments{
 \item{gwas_table}{Object returned from read_gwas() function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
+
+\item{nobees}{Set to true to disable beeswarm geom}
 }
 \description{
 Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
