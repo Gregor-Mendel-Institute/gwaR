@@ -2,9 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{plot_annotated_gwas}
 \alias{plot_annotated_gwas}
-\title{Based on a GWAS table, generates a manhatten plot, with gene annotations. Number of annotations can be toggled
-by changing nlabels. By default only plots annotations for SNPs that are within a gene annotation.
-For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.}
+\title{Plot annotated manhattan plot}
 \usage{
 plot_annotated_gwas(gwas_table, title = "No Title", subtitle = NULL,
   nlabels = 5, labeltype = "GeneId", match_nearest = FALSE,
@@ -28,9 +26,10 @@ plot_annotated_gwas(gwas_table, title = "No Title", subtitle = NULL,
 \item{mac_filter}{everything with a mac (minor allele count) below this will not be plotted.}
 }
 \description{
-Based on a GWAS table, generates a manhatten plot, with gene annotations. Number of annotations can be toggled
-by changing nlabels. By default only plots annotations for SNPs that are within a gene annotation.
-For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
+Plot annotated manhattan plot
+}
+\details{
+Based on a GWAS table, generates a manhatten plot, with gene annotations. Number of annotations can be toggled by changing nlabels. By default only plots annotations for SNPs that are within a gene annotation. For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
 }
 \seealso{
 \code{\link{read_gwas}}

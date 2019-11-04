@@ -1,6 +1,8 @@
 importFrom("stats", "filter")
 importFrom("magrittr", "%>%")
 importFrom("magrittr", "%<>%")
+importFrom("magrittr", "%T>%")
+importFrom("stats", "na.omit", "reformulate")
 import(ggplot2)
 export(read_gwas,
        get_polymorph_acc,
@@ -15,4 +17,6 @@ export(read_gwas,
        get_nearest_genes,
        get_overlapping_genes,
        plot_gwas,
-       plot_annotated_gwas)
+       plot_annotated_gwas,
+       snp_linkage,
+       plot_anchored_ld)

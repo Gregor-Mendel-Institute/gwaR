@@ -2,9 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{intersect_phenotype_snp}
 \alias{intersect_phenotype_snp}
-\title{Get intersection between phenotype, and variant tale.
-Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
-where accessions that contain the SNP have TRUE in hasSNP}
+\title{Get intersection between phenotype, and variant table.}
 \usage{
 intersect_phenotype_snp(phenotype_table, phenotype, gwas_table, SNPrank,
   acc_col = "ACC_ID", specific = NULL)
@@ -23,9 +21,10 @@ intersect_phenotype_snp(phenotype_table, phenotype, gwas_table, SNPrank,
 \item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
 }
 \description{
-Get intersection between phenotype, and variant tale.
-Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene,
-where accessions that contain the SNP have TRUE in hasSNP
+Get intersection between phenotype, and variant table.
+}
+\details{
+Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene, where accessions that contain the SNP have TRUE in hasSNP
 }
 \seealso{
 \code{\link{get_phenotype}}

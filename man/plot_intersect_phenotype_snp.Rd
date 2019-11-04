@@ -2,7 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{plot_intersect_phenotype_snp}
 \alias{plot_intersect_phenotype_snp}
-\title{Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.}
+\title{Split phenotype table by SNP presence and plot}
 \usage{
 plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
   SNPrank, acc_col = "ACC_ID", specific = NULL, nobees = FALSE)
@@ -23,7 +23,10 @@ plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
 \item{nobees}{Set to true to disable beeswarm geom}
 }
 \description{
-Based on a GeneID and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
+Split phenotype table by SNP presence and plot
+}
+\details{
+Based on a Phenotype table, the name of the phenotype and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
 }
 \seealso{
 \code{\link{get_phenotype}}

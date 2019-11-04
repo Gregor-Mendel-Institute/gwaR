@@ -2,10 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{get_overlapping_genes}
 \alias{get_overlapping_genes}
-\title{Based on a GWAS table, returns the gene annotation that is overlapping with each SNP for the number of SNP specified.
-If there is no overlap, the SNP is returned, but the GeneID column is empty.
-Lookup is done via ensembl plants; requires internet connection.
-!This function will assign araGenes in the Global Environment!}
+\title{Find genes that overlap with a SNP.}
 \usage{
 get_overlapping_genes(gwas_table = NULL, n_hit = 1, distance = -1)
 }
@@ -17,10 +14,10 @@ get_overlapping_genes(gwas_table = NULL, n_hit = 1, distance = -1)
 \item{distance}{The maximum distance from SNP to annotation, can be varied to lookup genes within a specific distance}
 }
 \description{
-Based on a GWAS table, returns the gene annotation that is overlapping with each SNP for the number of SNP specified.
-If there is no overlap, the SNP is returned, but the GeneID column is empty.
-Lookup is done via ensembl plants; requires internet connection.
-!This function will assign araGenes in the Global Environment!
+Find genes that overlap with a SNP.
+}
+\details{
+Based on a GWAS table, returns the gene annotation that is overlapping with each SNP for the number of SNP specified. If there is no overlap, the SNP is returned, but the GeneID column is empty. Lookup is done via ensembl plants; requires internet connection.
 }
 \seealso{
 \code{\link{read_gwas}}

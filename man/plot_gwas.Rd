@@ -2,8 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{plot_gwas}
 \alias{plot_gwas}
-\title{Based on a GWAS table, generates a manhatten plot.
-For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.}
+\title{Based on a GWAS table, generates a manhatten plot.}
 \usage{
 plot_gwas(gwas_table, title = "No Title", subtitle = NULL,
   p_filter = 2, mac_filter = 0)
@@ -21,6 +20,8 @@ plot_gwas(gwas_table, title = "No Title", subtitle = NULL,
 }
 \description{
 Based on a GWAS table, generates a manhatten plot.
+}
+\details{
 For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
 }
 \seealso{
