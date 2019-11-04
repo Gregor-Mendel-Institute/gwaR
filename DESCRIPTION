@@ -2,7 +2,7 @@ Package: gwaR
 Type: Package
 Title: A collection of R functions to conduct GWAS analysis (in Arabidopsis thaliana) 
 Version: 0.3.0
-Authors: c(
+Authors@R: c(
   person("Niklas", "Schandry", email = "niklas.schandry@gmi.oeaw.ac.at", role = c("aut","cre")),
   person("Patrick", "Hüther", email = "patrick.huether@gmi.oeaw.ac.at", role = c("aut"))
   )
