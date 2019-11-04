@@ -666,7 +666,7 @@ plot_anchored_ld <-  function(gwas_table,
            start = start_position,
            end = end_position,
            direction = strand,
-           strand = case_when(strand == -1 ~ "reverse", TRUE ~ "forward"))
+           strand = dplyr::case_when(strand == -1 ~ "reverse", TRUE ~ "forward"))
 
   ## Transforming LD table into more plotable table.
 
