@@ -694,7 +694,7 @@ plot_anchored_ld <-  function(gwas_table,
     # color scale
     scale_color_viridis_c(option = "plasma", direction = -1) +
     # Gene Arrows
-    gggenes::geom_gene_arrow(aes(xmin = start, xmax = end, y = molecule, fill = gene, foward = direction), data = gene_labels) +
+    gggenes::geom_gene_arrow(aes(xmin = start, xmax = end, y = molecule, fill = gene, forward = direction), data = gene_labels) +
     # Gene labels
     gggenes::geom_gene_label(aes(xmin = start, xmax = end, y = molecule, fill = gene, label = gene), data = gene_labels) + # Gene labels
     # Minimal Theme
