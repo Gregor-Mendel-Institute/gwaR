@@ -86,22 +86,56 @@ plot_acc_map <- function(gwas_table, SNPrank){
                                 stroke=FALSE, radius=5, fillOpacity=0.8, color="#007243")
 }
 
+
+
+# get_expression <- function(GeneID){
+#   if(is.null(GeneID)) {
+#     stop("No GeneID supplied")
+#   }
+#   if(!exists("Kawakatsu_dat")){
+#     Kawakatsu_dat <- readr::read_csv("https://arapheno.1001genomes.org/static/rnaseq/Epigenomic_Diversity_in_A._thaliana_(Kawakatsu_et_al._2016).csv") %>%
+#       tidyr::as_tibble() %>%
+#       magrittr::set_colnames(c("ACC_ID", colnames(.)[2:ncol(.)]))
+#   }
+#   if(!paste(GeneID) %in% colnames(Kawakatsu_dat)){
+#     stop(paste0("No expression data in Kawakatsu2016 for GeneID: ",GeneID))
+#   }
+#     Kawakatsu_dat %>%
+#       dplyr::select(ACC_ID, eval(GeneID)) %>%
+#       tidyr::pivot_longer(dplyr::starts_with("AT"), names_to = "GeneID", values_to = "phenotype_value")
+#
+# }
+# httr::content(httr::GET("https://arapheno.1001genomes.org/rest/rnaseq/52/ATMG01410/values/")) %>% {data.frame(matrix(unlist(.), nrow=length(.), byrow=T, stringsAsFactors=FALSE, ))}
+#
+# httr::content(httr::GET("https://arapheno.1001genomes.org/rest/rnaseq/52/ATMG01410/values/")) %>%
+#   unlist %>%
+#   plyr::ldply() %>%
+#   pivot_wider(names_from =  .id, values_from = V1)
+
 #' Get expression data for a gene of interest
 #' @param GeneID An Arabidopsis thaliana gene identifier
+#' @param study (default 52) the study of interest at arapheno, see list here
 
-get_expression <- function(GeneID){
-  if(!exists("Kawakatsu_dat")){
-    Kawakatsu_dat <- readr::read_csv("https://arapheno.1001genomes.org/static/rnaseq/Epigenomic_Diversity_in_A._thaliana_(Kawakatsu_et_al._2016).csv") %>%
-      tidyr::as_tibble() %>%
-      magrittr::set_colnames(c("ACC_ID", colnames(.)[2:ncol(.)]))
+get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
+  if(list_studies){
+    data.table::rbindlist(
+      httr::content(httr::GET("https://arapheno.1001genomes.org/rest/study/list/"))
+    ) %>% as_data_frame()
   }
-  if(!paste(GeneID) %in% colnames(Kawakatsu_dat)){
-    stop(paste0("No expression data in Kawakatsu2016 for GeneID: ",GeneID))
+  if(is.null(GeneID)) {
+    stop("No GeneID supplied")
   }
-    Kawakatsu_dat %>%
-      dplyr::select(ACC_ID, eval(GeneID)) %>%
-      tidyr::pivot_longer(dplyr::starts_with("AT"), names_to = "GeneID", values_to = "phenotype_value")
-}
+  data.table::rbindlist(
+    httr::content(httr::GET(paste0("https://arapheno.1001genomes.org/rest/rnaseq/",
+                                   study,
+                                   "/",
+                                   GeneID,
+                                   "/values")))
+  ) %>%
+    as_data_frame() %>%
+    mutate(ACC_ID = accession_id)
+ }
+
 
 #' Based on a GeneID and a GWAS table and a rank, returns a table of expression values for that gene,
 #' where accessions that contain the SNP have TRUE in hasSNP
@@ -159,7 +193,7 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank, nobees = FALSE){
          x = "SNP present",
          y = "Value") +
     theme_bw() +
-    facet_wrap(~GeneID)
+    facet_wrap(~phenotype_name)
   print(p)
 }
 

@@ -3,6 +3,7 @@ importFrom("magrittr", "%>%")
 importFrom("magrittr", "%<>%")
 importFrom("magrittr", "%T>%")
 importFrom("stats", "na.omit", "reformulate")
+importFrom("data.table", "rbindlist")
 import(ggplot2)
 export(read_gwas,
        get_polymorph_acc,
