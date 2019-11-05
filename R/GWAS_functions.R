@@ -12,22 +12,57 @@ araGenome <- biomaRt::getBM(c("ensembl_gene_id",
                              "transcript_biotype"),
                            mart = biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org'))
 
+#' A nicely formatted GRanges object
+araGenes <- araGenome %>%
+  dplyr::rename(GeneId=ensembl_gene_id) %>%
+  dplyr::mutate(strand=dplyr::case_when(strand == 1 ~ "+",
+                                        strand == -1 ~ "-"),
+                start = start_position,
+                end = end_position) %>%
+  dplyr::filter(stringr::str_detect(chromosome_name,"[1-9]")) %>%
+  dplyr::mutate(seqnames=paste0("Chr",chromosome_name)) %>%
+  plyranges::as_granges()
 
-#' This function has no real purpose.
-#' @param gwas A gwas result table
+### Function Zone
 
-format_gwas <- function(gwas){
-  gwas %<>% dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
-                   log10_p = score,
-  )
+#' Read an arbitrary GWAS table.
+#' @details This function is a flexible version of \code{\link{read_gwas}}
+#' @param gwas_path A gwas result table
+#' @param p_col Name of the column containing p-values
+#' @param chrom_col Name of the column containing chromosomes
+#' @param pos_col Name of the column containing positions
+
+format_gwas <- function(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NULL){
+  gwas_object <- vroom::vroom(gwas_path)
+  gwas_object <- dplyr::mutate(
+                 pv = eval(p_col),
+                 chrom = eval(chrom_col),
+                 pos = eval(pos_col),
+                 .data = gwas_object)
+  fdr_corr <- qvalue::qvalue(p = gwas_object$pv)
+  fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05 )]) %>% max() %>% log10() %>% abs()
+  bf_corr <- (0.05/nrow(gwas_object)) %>% log10() %>% abs()
+  gwas_object %<>%
+    dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
+                  Significant = dplyr::case_when(-log10(pv) > bf_corr ~ "Bonferroni",
+                                                 -log10(pv) > fdr_thresh ~ "FDR",
+                                                 TRUE ~ "Not"),
+                  log10_p = -log10(pv),
+                  fdr_thresh = fdr_thresh,
+                  bf_corr = bf_corr,
+                  model = dplyr::case_when(grepl(pattern = "_specific_", gwas_path) ~ "specific",
+                                           grepl(pattern = "_common_", gwas_path) ~ "common",
+                                           grepl(pattern = "_any_", gwas_path) ~ "any",
+                                           TRUE ~ "Unknown"
+                  )) %>%
+    dplyr::arrange(dplyr::desc(log10_p))
   return(gwas_object)
 }
 
 #' Read a GWAS result file from limix (csv) and put it into a specific (somewhat arbitrary) format.
-#'
-#' `read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether
-#' a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
+#' @details `read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
 #' @param gwas_path Path to a gwas result file containing SNP positions and p-values
+#' @seealso \code{\link{format_gwas}}
 
 read_gwas <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
@@ -115,7 +150,7 @@ plot_acc_map <- function(gwas_table, SNPrank){
 #' Get expression data for a gene of interest
 #' @param GeneID An Arabidopsis thaliana gene identifier
 #' @param study (default 52) the study of interest at arapheno, see list here
-#' @param list_sudies If true, will return a list of available studies from arapheno.
+#' @param list_studies If TRUE, will return a list of available studies from arapheno.
 
 get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
   if(list_studies){
@@ -133,8 +168,8 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
                                    GeneID,
                                    "/values")))
   ) %>%
-    as_data_frame() %>%
-    mutate(ACC_ID = accession_id)
+    dplyr::as_data_frame() %>%
+    dplyr::mutate(ACC_ID = accession_id)
  }
 
 
@@ -143,11 +178,11 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
 #' @param GeneID An Arabidopsis thaliana gene identifier
 #' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @seealso  \code{\link{get_expression}}
-#' @seealso  \code{\link{read_gwas}}
+#' @seealso \code{\link{get_expression}}
+#' @seealso \code{\link{read_gwas}}
 
 intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
-  get_expression(GeneID) %>%
+  get_expression(GeneID = GeneID) %>%
     dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table,SNPrank)$strain ~ TRUE,
                                             TRUE ~ FALSE))
 }
@@ -164,7 +199,7 @@ retrieve_counts <- function(gwas_table, SNPrank){
   genes <- get_nearest_genes(gwas_table, SNPrank) %>%
              dplyr::slice(SNPrank) %>%
              .$GeneId
-  get_expression(genes) %>%
+  get_expression(GeneID = genes) %>%
     dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
                                              TRUE ~ FALSE))
 }
@@ -199,17 +234,9 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank, nobees = FALSE){
 }
 
 
-#################
-# Below are functions that are generalizations of the expression specific functions.
-# They use a phenotype table, which comes in wide format and extract phenotype values.
-# These phenotypes are matched to a specific SNP in a GWAS table with intersect_phenotype_snp, giving a presence | abscence factor
-# Plotting is available via plot_intersect_phenotype_snp.
-#################
-
-#get_phenotype is a more general version of get_expression, that works with custom phenotype tables, in wide format.
 
 #' Subset a larger wide-format phenotype table to a defined phenotype.
-#' Optionally includes a "specific" variable.
+#' @details This function takes a phenotype table in wide format, and returns that phenotype. Optionally includes a "specific" variable.
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
 #' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
 #' @param acc_col the column that contains accession identifiers.
@@ -274,7 +301,11 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
     overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
   }
 
-  p <-  intersect_phenotype_snp(phenotype_table, phenotype , gwas_table, SNPrank, specific = specific)  %T>% print %>%
+  p <-  intersect_phenotype_snp(phenotype_table = phenotype_table,
+                                phenotype = phenotype,
+                                gwas_table = gwas_table,
+                                SNPrank = SNPrank,
+                                specific = specific) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
     overplot_geom +

@@ -10,6 +10,11 @@ read_gwas(gwas_path)
 \item{gwas_path}{Path to a gwas result file containing SNP positions and p-values}
 }
 \description{
-`read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether
-a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
+Read a GWAS result file from limix (csv) and put it into a specific (somewhat arbitrary) format.
+}
+\details{
+`read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
+}
+\seealso{
+\code{\link{format_gwas}}
 }

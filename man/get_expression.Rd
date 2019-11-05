@@ -11,7 +11,7 @@ get_expression(GeneID = NULL, study = 52, list_studies = FALSE)
 
 \item{study}{(default 52) the study of interest at arapheno, see list here}
 
-\item{list_sudies}{If true, will return a list of available studies from arapheno.}
+\item{list_studies}{If TRUE, will return a list of available studies from arapheno.}
 }
 \description{
 Get expression data for a gene of interest

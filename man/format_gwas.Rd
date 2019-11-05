@@ -2,13 +2,23 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{format_gwas}
 \alias{format_gwas}
-\title{This function has no real purpose.}
+\title{Read an arbitrary GWAS table.}
 \usage{
-format_gwas(gwas)
+format_gwas(gwas_path, p_col = NULL, chrom_col = NULL,
+  pos_col = NULL)
 }
 \arguments{
-\item{gwas}{A gwas result table}
+\item{gwas_path}{A gwas result table}
+
+\item{p_col}{Name of the column containing p-values}
+
+\item{chrom_col}{Name of the column containing chromosomes}
+
+\item{pos_col}{Name of the column containing positions}
 }
 \description{
-This function has no real purpose.
+Read an arbitrary GWAS table.
+}
+\details{
+This function is a flexible version of \code{\link{read_gwas}}
 }

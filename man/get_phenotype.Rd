@@ -2,8 +2,7 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{get_phenotype}
 \alias{get_phenotype}
-\title{Subset a larger wide-format phenotype table to a defined phenotype.
-Optionally includes a "specific" variable.}
+\title{Subset a larger wide-format phenotype table to a defined phenotype.}
 \usage{
 get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID",
   specific = NULL)
@@ -19,5 +18,7 @@ get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID",
 }
 \description{
 Subset a larger wide-format phenotype table to a defined phenotype.
-Optionally includes a "specific" variable.
+}
+\details{
+This function takes a phenotype table in wide format, and returns that phenotype. Optionally includes a "specific" variable.
 }
