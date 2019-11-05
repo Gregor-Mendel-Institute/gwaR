@@ -2,21 +2,25 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{plot_intersect_expression_snp}
 \alias{plot_intersect_expression_snp}
-\title{Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
-where accessions that contain the SNP have TRUE in hasSNP}
+\title{Intersect SNP presence with Gene expression.s}
 \usage{
-plot_intersect_expression_snp(gwas_table, SNPrank, nobees = FALSE)
+plot_intersect_expression_snp(gwas_table, SNPrank, GeneID = NULL,
+  nobees = FALSE)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
+\item{GeneID}{(optional) if not NULL, the counts for this gene will be plotted.}
+
 \item{nobees}{Set to true to disable beeswarm geom}
 }
 \description{
-Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
-where accessions that contain the SNP have TRUE in hasSNP
+Intersect SNP presence with Gene expression.s
+}
+\details{
+Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP (or an arbitrary gene, see GeneID)where accessions that contain the SNP have TRUE in hasSNP
 }
 \seealso{
 \code{\link{read_gwas}}

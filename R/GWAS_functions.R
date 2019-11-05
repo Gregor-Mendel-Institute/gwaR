@@ -204,22 +204,25 @@ retrieve_counts <- function(gwas_table, SNPrank){
                                              TRUE ~ FALSE))
 }
 
-#' Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
-#' where accessions that contain the SNP have TRUE in hasSNP
+#' Intersect SNP presence with Gene expression.s
+#' @details Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP (or an arbitrary gene, see GeneID)where accessions that contain the SNP have TRUE in hasSNP
 #' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param GeneID (optional) if not NULL, the counts for this gene will be plotted.
 #' @param nobees Set to true to disable beeswarm geom
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{get_expression}}
 #' @seealso \code{\link{get_nearest_genes}}
 #' @seealso \code{\link{retrieve_counts}}
 
-plot_intersect_expression_snp <- function(gwas_table, SNPrank, nobees = FALSE){
+plot_intersect_expression_snp <- function(gwas_table, SNPrank, GeneID = NULL, nobees = FALSE){
   if(nobees){
     overplot_geom <- geom_point(alpha = 0.3)
   } else{
     overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
   }
+  if(is.null(GeneID)){
+  message("No GeneID supplied, plotting values for Gene closest to SNP")
   p <-  retrieve_counts(gwas_table, SNPrank) %>%
     ggplot(aes(x = hasSNP, y = phenotype_value)) +
     geom_boxplot(aes(fill = hasSNP)) +
@@ -231,6 +234,20 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank, nobees = FALSE){
     theme_bw() +
     facet_wrap(~phenotype_name)
   print(p)
+  } else {
+    get_expression(GeneID = GeneID) %>%
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table = gwas_table, SNPrank = SNPrank)$strain ~ TRUE,
+                                              TRUE ~ FALSE)) %>%
+      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      geom_boxplot(aes(fill = hasSNP)) +
+      overplot_geom +
+      labs(title = paste0("Expression of nearest gene by SNP presence"),
+           caption = "Expression data from araPheno",
+           x = "SNP present",
+           y = "Value") +
+      theme_bw() +
+      facet_wrap(~phenotype_name)
+  }
 }
 
 
