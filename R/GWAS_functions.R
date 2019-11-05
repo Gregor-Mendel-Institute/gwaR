@@ -653,12 +653,16 @@ plot_anchored_ld <-  function(gwas_table,
 
   }
   ## construct call (this directly reads the csv from 1001genomes)
-  snp_impacts <- httr::content(httr::GET(paste0(
+  snp_impacts <- httr::content(
+    httr::GET(
+      paste0(
     "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
     ";chr=", chrom,
     ";start=", start_pos,
     ";end=", end_pos,
-    ";type=snps")))
+    ";type=snps")
+    )
+    )
 
   ## Labels for the gene plots
 
@@ -677,7 +681,7 @@ plot_anchored_ld <-  function(gwas_table,
     dplyr::as_tibble() %>%
     tidyr::pivot_longer(tidyselect::matches(":")) %>%
     na.omit %>%
-    dplyr::mutate(pos = as.numeric(str_split_fixed(name, "[:|_]",3)[,2])) %>%
+    dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., snp_impacts)
 
   ## Build Plot
@@ -688,13 +692,13 @@ plot_anchored_ld <-  function(gwas_table,
     # Line denoting SNP of interest
     geom_vline(aes(xintercept = snp_pos), color = "darkred") +
     # Modifier SNPs
-    geom_point(aes(x= pos, y = -0.2, shape = effect_impact), data = {. %>% filter(value >= linkage_cutoff, effect_Impact == "MODIFIER")}) +
+    geom_point(aes(x= pos, y = -0.2, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "MODIFIER")}) +
     # LOW SNPs
-    geom_point(aes(x= pos, y = -0.15, shape = effect_impact), data = {. %>% filter(value >= linkage_cutoff, effect_Impact == "LOW")}) +
+    geom_point(aes(x= pos, y = -0.15, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "LOW")}) +
     # MODERATE SNPs
-    geom_point(aes(x= pos, y = -0.1, shape = effect_impact), data = {. %>% filter(value >= linkage_cutoff, effect_Impact == "MODERATE")}) +
+    geom_point(aes(x= pos, y = -0.1, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "MODERATE")}) +
     # HIGH SNPs
-    geom_point(aes(x= pos, y = -0.05, shape = effect_impact), data = {. %>% filter(value >= linkage_cutoff, effect_Ismpact == "HIGH")}) +
+    geom_point(aes(x= pos, y = -0.05, shape = effect_Impacts), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Ismpact == "HIGH")}) +
     # color scale
     scale_color_viridis_c(option = "plasma", direction = -1) +
     # Gene Arrows
