@@ -6,10 +6,11 @@
 \usage{
 plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
   ld_stats = c("D.prime"), use_phenotype_table = NULL,
-  acc_col = "ACC_ID", linkage_cutoff = 0.8, LD_legend = FALSE)
+  acc_col = "ACC_ID", linkage_cutoff = 0.8, LD_legend = FALSE,
+  data_only = FALSE)
 }
 \arguments{
-\item{gwas_table}{Object returned from read_gwas() function}
+\item{gwas_table}{Object returned from \code\link{read_gwas()} function}
 
 \item{rank}{Rank of the SNP of interest}
 
@@ -24,6 +25,8 @@ plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
 \item{linkage_cutoff}{Only SNPs that have an LD values >= this will be plotted (default 0.8)}
 
 \item{LD_legend}{Toggle color legend for LD. Off by default.}
+
+\item{data_only}{If true does not plot, only returns the data used for plotting.}
 }
 \description{
 Produce a plot of linked SNPs

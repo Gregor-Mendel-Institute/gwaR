@@ -8,7 +8,7 @@ where accessions that contain the SNP have TRUE in hasSNP}
 plot_intersect_expression_snp(gwas_table, SNPrank, nobees = FALSE)
 }
 \arguments{
-\item{gwas_table}{Object returned from read_gwas() function}
+\item{gwas_table}{Object returned from \code\link{read_gwas()} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
