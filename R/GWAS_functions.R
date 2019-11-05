@@ -653,7 +653,7 @@ plot_anchored_ld <-  function(gwas_table,
 
   }
   ## construct call (this directly reads the csv from 1001genomes)
-  snp_impacts <- httr::content(
+  snp_impacts <- readr::read_csv(httr::content(
     httr::GET(
       paste0(
     "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
@@ -662,7 +662,7 @@ plot_anchored_ld <-  function(gwas_table,
     ";end=", end_pos,
     ";type=snps")
     )
-    )
+    ), col_types = "iifcccccccccccc")
 
   ## Labels for the gene plots
 
