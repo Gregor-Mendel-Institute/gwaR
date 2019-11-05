@@ -673,7 +673,8 @@ plot_anchored_ld <-  function(gwas_table,
 
   ## Transforming LD table into more plotable table.
 
-  plot_data <- anc_ld %>% as_tibble() %>%
+  plot_data <- anc_ld %>%
+    dplyr::as_tibble() %>%
     tidyr::pivot_longer(tidyselect::matches(":")) %>%
     na.omit %>%
     dplyr::mutate(pos = as.numeric(str_split_fixed(name, "[:|_]",3)[,2])) %>%
@@ -707,7 +708,8 @@ plot_anchored_ld <-  function(gwas_table,
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank()) +
-    guides(color = LD_legend) + # Color guide
+    guides(color = LD_legend) # Color guide
+
     if(data_only){
       return(plot_data)
     } else{
