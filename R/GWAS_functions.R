@@ -692,13 +692,13 @@ plot_anchored_ld <-  function(gwas_table,
     # Line denoting SNP of interest
     geom_vline(aes(xintercept = snp_pos), color = "darkred") +
     # Modifier SNPs
-    geom_point(aes(x= pos, y = -0.2, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "MODIFIER")}) +
+    geom_point(aes(x= pos, y = -0.2, shape = effect_impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_impact == "MODIFIER")}) +
     # LOW SNPs
-    geom_point(aes(x= pos, y = -0.15, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "LOW")}) +
+    geom_point(aes(x= pos, y = -0.15, shape = effect_impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_impact == "LOW")}) +
     # MODERATE SNPs
-    geom_point(aes(x= pos, y = -0.1, shape = effect_Impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Impact == "MODERATE")}) +
+    geom_point(aes(x= pos, y = -0.1, shape = effect_impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_impact == "MODERATE")}) +
     # HIGH SNPs
-    geom_point(aes(x= pos, y = -0.05, shape = effect_Impacts), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_Ismpact == "HIGH")}) +
+    geom_point(aes(x= pos, y = -0.05, shape = effect_impacts), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_ismpact == "HIGH")}) +
     # color scale
     scale_color_viridis_c(option = "plasma", direction = -1) +
     # Gene Arrows
