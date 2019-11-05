@@ -52,7 +52,7 @@ read_gwas <- function(gwas_path){
 }
 
 #' Query the 1001genomes API to obtain accession ids that carry a SNP of interest
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso \code{\link{read_gwas}}
 
@@ -69,7 +69,7 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
 }
 
 #' Plot an interactive map of accessions that carry a SNP of interest
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso \code{\link{read_gwas}}
 
@@ -115,6 +115,7 @@ plot_acc_map <- function(gwas_table, SNPrank){
 #' Get expression data for a gene of interest
 #' @param GeneID An Arabidopsis thaliana gene identifier
 #' @param study (default 52) the study of interest at arapheno, see list here
+#' @param list_sudies If true, will return a list of available studies from arapheno.
 
 get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
   if(list_studies){
@@ -140,7 +141,7 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
 #' Based on a GeneID and a GWAS table and a rank, returns a table of expression values for that gene,
 #' where accessions that contain the SNP have TRUE in hasSNP
 #' @param GeneID An Arabidopsis thaliana gene identifier
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso  \code{\link{get_expression}}
 #' @seealso  \code{\link{read_gwas}}
@@ -153,7 +154,7 @@ intersect_expression_snp <- function(GeneID, gwas_table, SNPrank){
 
 #' Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
 #' where accessions that contain the SNP have TRUE in hasSNP
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{get_expression}}
@@ -170,7 +171,7 @@ retrieve_counts <- function(gwas_table, SNPrank){
 
 #' Based on a GWAS table and a rank, returns a table of expression values for the gene that is closest to that SNP
 #' where accessions that contain the SNP have TRUE in hasSNP
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param nobees Set to true to disable beeswarm geom
 #' @seealso \code{\link{read_gwas}}
@@ -238,7 +239,7 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specif
 #' @details  Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, returns a table of phenotype values for that gene, where accessions that contain the SNP have TRUE in hasSNP
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
 #' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
 #' @param specific (optional) treatment column that was used to split samples for specific GWAS.
@@ -257,7 +258,7 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
 #' @details Based on a Phenotype table, the name of the phenotype and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
 #' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
 #' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
 #' @param acc_col the column that contains accession identifiers.
 #' @param specific (optional) treatment column that was used to split samples for specific GWAS.
@@ -287,7 +288,7 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
 
 #' Find genes that are closest to a SNP.
 #' @details Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified. This function always returns the closest annotation. To limit the lookup range use {/link get_overlapping_genes()}  Lookup is done via ensembl plants; requires internet connection.
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param n_hit The number of SNPs that should be looked up.
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{get_overlapping_genes}}
@@ -345,7 +346,7 @@ get_nearest_genes <- function(gwas_table = NULL, n_hit = 1){
 
 #' Find genes that overlap with a SNP.
 #' @details Based on a GWAS table, returns the gene annotation that is overlapping with each SNP for the number of SNP specified. If there is no overlap, the SNP is returned, but the GeneID column is empty. Lookup is done via ensembl plants; requires internet connection.
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param n_hit The number of SNPs that should be looked up.
 #' @param distance The maximum distance from SNP to annotation, can be varied to lookup genes within a specific distance
 #' @seealso \code{\link{read_gwas}}
@@ -389,7 +390,7 @@ get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
 
 #' Based on a GWAS table, generates a manhatten plot.
 #' @details For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param title Specify plot title
 #' @param subtitle Specify plot subtitle
 #' @param p_filter everything with a log10(p) below this value will not be included in the plot
@@ -430,7 +431,7 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
 
 #' Plot annotated manhattan plot
 #' @details Based on a GWAS table, generates a manhatten plot, with gene annotations. Number of annotations can be toggled by changing nlabels. By default only plots annotations for SNPs that are within a gene annotation. For performance reasons, everything with a log10(p) smaller than p_filter is filtered out.
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param title Specify plot title
 #' @param subtitle Specify plot subtitle
 #' @param nlabels How many labels should be plotted (default: 5)
@@ -492,7 +493,7 @@ plot_annotated_gwas <- function(gwas_table,
 
 #' Calculate linkage around SNP of interest.
 #' @details Details are fuzzy right now
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param rank Rank of the SNP of interest
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
 #' @param ld_depth Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)
@@ -599,7 +600,7 @@ snp_linkage <- function(gwas_table,
 #' Produce a plot of linked SNPs
 #' @details This function takes a gwas table and a rank and produces a plot that illustrates, SNPs that are within nuc_range around the SNP, the degree of linkage, the impact of the other SNPs and a track of gene annotations to easily identify linked SNPs that have a high impact.
 #' @details Impact according to 1001genomes.org
-#' @param gwas_table Object returned from \code\link{read_gwas()} function
+#' @param gwas_table Object returned from \code{\link{read_gwas()}} function
 #' @param rank Rank of the SNP of interest
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
 #' @param ld_stats The LD statistics, see SNPStats::ld

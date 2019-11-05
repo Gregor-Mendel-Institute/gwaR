@@ -10,7 +10,7 @@ intersect_expression_snp(GeneID, gwas_table, SNPrank)
 \arguments{
 \item{GeneID}{An Arabidopsis thaliana gene identifier}
 
-\item{gwas_table}{Object returned from \code\link{read_gwas()} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 }

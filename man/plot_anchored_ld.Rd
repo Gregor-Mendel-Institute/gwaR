@@ -10,7 +10,7 @@ plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
   data_only = FALSE)
 }
 \arguments{
-\item{gwas_table}{Object returned from \code\link{read_gwas()} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
 
 \item{rank}{Rank of the SNP of interest}
 
