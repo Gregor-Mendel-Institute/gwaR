@@ -698,7 +698,7 @@ plot_anchored_ld <-  function(gwas_table,
     # MODERATE SNPs
     geom_point(aes(x= pos, y = -0.1, shape = effect_impact), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_impact == "MODERATE")}) +
     # HIGH SNPs
-    geom_point(aes(x= pos, y = -0.05, shape = effect_impacts), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_ismpact == "HIGH")}) +
+    geom_point(aes(x= pos, y = -0.05, shape = effect_impacts), data = {. %>% dplyr::filter(value >= linkage_cutoff, effect_impact == "HIGH")}) +
     # color scale
     scale_color_viridis_c(option = "plasma", direction = -1) +
     # Gene Arrows
