@@ -293,9 +293,11 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specif
 
 
 intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL) {
+  if(!is.null(specific)){
   get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
     dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
                               TRUE ~ FALSE))
+  }
 }
 
 #' Split phenotype table by SNP presence and plot
@@ -317,20 +319,35 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
   } else{
     overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
   }
+  if(is.null(specific)){
+    p <-  intersect_phenotype_snp(phenotype_table = phenotype_table,
+                                  phenotype = phenotype,
+                                  gwas_table = gwas_table,
+                                  SNPrank = SNPrank,
+                                  specific = specific) %>%
+      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      geom_boxplot(aes(fill = hasSNP)) +
+      overplot_geom +
+      labs(title = paste0("Phenotype values by SNP presence"),
+           x = "SNP present",
+           y = "Value") +
+      theme_bw()
+  } else{
+    p <-  intersect_phenotype_snp(phenotype_table = phenotype_table,
+                                  phenotype = phenotype,
+                                  gwas_table = gwas_table,
+                                  SNPrank = SNPrank,
+                                  specific = specific) %>%
+      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      geom_boxplot(aes(fill = hasSNP)) +
+      overplot_geom +
+      labs(title = paste0("Phenotype values by SNP presence"),
+           x = "SNP present",
+           y = "Value") +
+      theme_bw() +
+      facet_grid(reformulate( specific, "Phenotype")) #????
+  }
 
-  p <-  intersect_phenotype_snp(phenotype_table = phenotype_table,
-                                phenotype = phenotype,
-                                gwas_table = gwas_table,
-                                SNPrank = SNPrank,
-                                specific = specific) %>%
-    ggplot(aes(x = hasSNP, y = phenotype_value)) +
-    geom_boxplot(aes(fill = hasSNP)) +
-    overplot_geom +
-    labs(title = paste0("Phenotype values by SNP presence"),
-         x = "SNP present",
-         y = "Value") +
-    theme_bw() +
-    facet_grid(reformulate( specific, "Phenotype")) #????
   print(p)
 }
 
