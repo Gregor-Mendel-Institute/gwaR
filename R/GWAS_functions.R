@@ -700,7 +700,7 @@ snp_linkage <- function(gwas_table,
     15592,15593,18694,18696,19949,19950,19951") # Very elegant.
   }
   subset_url <- paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
-                       stringr::str_remove_all(genotypes,"[\n]"),
+                       stringr::str_remove_all(genotypes, "[\n| ]"),
                        "/regions/",
                        region,
                        "/type/fullgenome/format/vcf")
