@@ -866,7 +866,8 @@ plot_anchored_ld <-   function(gwas_table,
 
   p <- ggplot(data = plot_data) +
     # Tile Geom for LD values
-    geom_tile(aes(x = pos , color = value, y = 0, height = 2), data = filter(plot_data %>% mutate(layer_var = "LD") %>% filter(layer_var == "LD"))) +
+    geom_tile(aes(x = pos , color = value, y = 0, height = 2),
+              data = plot_data %>% dplyr::mutate(layer_var = "LD") %>% dplyr::filter(layer_var == "LD")) +
     # Line denoting SNP of interest
     geom_vline(aes(xintercept = snp_pos), color = "darkred") +
     # Modifier SNPs
