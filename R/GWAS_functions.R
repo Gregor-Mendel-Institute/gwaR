@@ -891,7 +891,9 @@ plot_anchored_ld <-   function(gwas_table,
           axis.ticks.y = element_blank(),
           panel.spacing.y = unit(0, "lines"),
           plot.background = element_rect(fill = "white"),
-          legend.position = "bottom")
+          legend.position = "bottom",
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank())
   if(isFALSE(LD_legend)){
     p <- p +
       guides(color = FALSE,
