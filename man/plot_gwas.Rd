@@ -8,7 +8,7 @@ plot_gwas(gwas_table, title = "No Title", subtitle = NULL,
   p_filter = 2, mac_filter = 0)
 }
 \arguments{
-\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{title}{Specify plot title}
 

@@ -8,7 +8,7 @@ plot_intersect_expression_snp(gwas_table, SNPrank, GeneID = NULL,
   nobees = FALSE)
 }
 \arguments{
-\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 

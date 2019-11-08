@@ -7,7 +7,7 @@
 get_overlapping_genes(gwas_table = NULL, n_hit = 1, distance = -1)
 }
 \arguments{
-\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{n_hit}{The number of SNPs that should be looked up.}
 

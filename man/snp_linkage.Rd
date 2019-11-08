@@ -10,7 +10,7 @@ snp_linkage(gwas_table, rank, nuc_range = 50000, ld_depth = "1000",
   use_all_acc = FALSE)
 }
 \arguments{
-\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{rank}{Rank of the SNP of interest}
 

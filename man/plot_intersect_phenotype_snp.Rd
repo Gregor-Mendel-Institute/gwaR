@@ -12,7 +12,7 @@ plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
 
 \item{phenotype}{a specific phenotype from the phenotype table. Must match to a column name of the phenotype table}
 
-\item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
+\item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
