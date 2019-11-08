@@ -6,7 +6,8 @@
 \usage{
 snp_linkage(gwas_table, rank, nuc_range = 50000, ld_depth = "1000",
   ld_stats = c("D.prime", "R.squared"), ld_symmetric = FALSE,
-  use_phenotype_table = NULL, acc_col = "ACC_ID", anchored = FALSE)
+  use_phenotype_table = NULL, acc_col = "ACC_ID", anchored = FALSE,
+  use_all_acc = FALSE)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
@@ -26,6 +27,8 @@ snp_linkage(gwas_table, rank, nuc_range = 50000, ld_depth = "1000",
 \item{acc_col}{Name of the column containing accession identifiers in the phenotype table}
 
 \item{anchored}{Perform anchored analysis. If TRUE Linkage will only be estimated for the SNP of interest, and the surrounding ones, but not between surrounding SNPs.}
+
+\item{use_all_acc}{If true, will override use_phenotype_table and use all 1135 sequenced accessions.}
 }
 \description{
 Calculate linkage around SNP of interest.

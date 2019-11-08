@@ -6,8 +6,8 @@
 \usage{
 plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
   ld_stats = c("D.prime"), use_phenotype_table = NULL,
-  acc_col = "ACC_ID", linkage_cutoff = 0.8, LD_legend = FALSE,
-  data_only = FALSE)
+  use_all_acc = FALSE, acc_col = "ACC_ID", linkage_cutoff = 0.8,
+  LD_legend = FALSE, data_only = FALSE)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas()}} function}
@@ -19,6 +19,8 @@ plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
 \item{ld_stats}{The LD statistics, see SNPStats::ld}
 
 \item{use_phenotype_table}{If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.}
+
+\item{use_all_acc}{If true, will override use_phenotype_table and use all 1135 sequenced accessions.}
 
 \item{acc_col}{Name of the column containing accession identifiers in the phenotype table}
 

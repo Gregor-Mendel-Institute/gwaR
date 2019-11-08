@@ -35,5 +35,6 @@ Imports:
     VariantAnnotation,
     snpStats,
     gggenes,
-    tidyselect
+    tidyselect,
+    forcats
 RoxygenNote: 6.1.1
