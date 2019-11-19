@@ -297,6 +297,10 @@ intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table, SNPr
   get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
     dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
                               TRUE ~ FALSE))
+  } else {
+    get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table, SNPrank)$strain ~ TRUE,
+                                              TRUE ~ FALSE))
   }
 }
 
