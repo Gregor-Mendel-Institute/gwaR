@@ -233,7 +233,7 @@ plot_intersect_expression_snp <- function(gwas_table, SNPrank, GeneID = NULL, no
          y = "Value") +
     theme_bw() +
     facet_wrap(~phenotype_name)
-  print(p)
+  return(p)
   } else {
     get_expression(GeneID = GeneID) %>%
       dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_polymorph_acc(gwas_table = gwas_table, SNPrank = SNPrank)$strain ~ TRUE,
@@ -352,7 +352,7 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
       facet_grid(reformulate( specific, "Phenotype")) #????
   }
 
-  print(p)
+  return(p)
 }
 
 #' Find genes that are closest to a SNP.
