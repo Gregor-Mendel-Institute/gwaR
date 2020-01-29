@@ -4,8 +4,13 @@
 \alias{plot_gwas}
 \title{Based on a GWAS table, generates a manhatten plot.}
 \usage{
-plot_gwas(gwas_table, title = "No Title", subtitle = NULL,
-  p_filter = 2, mac_filter = 0)
+plot_gwas(
+  gwas_table,
+  title = "No Title",
+  subtitle = NULL,
+  p_filter = 2,
+  mac_filter = 0
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
@@ -16,7 +21,7 @@ plot_gwas(gwas_table, title = "No Title", subtitle = NULL,
 
 \item{p_filter}{everything with a log10(p) below this value will not be included in the plot}
 
-\item{mac_filter}{everything with a mac (minor allele count) below this will not be plotted.}
+\item{mac_filter}{everything with a mac (minor allele count) below this will not be plotted. This requires a mac column.}
 }
 \description{
 Based on a GWAS table, generates a manhatten plot.

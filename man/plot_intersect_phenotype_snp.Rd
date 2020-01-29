@@ -4,8 +4,15 @@
 \alias{plot_intersect_phenotype_snp}
 \title{Split phenotype table by SNP presence and plot}
 \usage{
-plot_intersect_phenotype_snp(phenotype_table, phenotype, gwas_table,
-  SNPrank, acc_col = "ACC_ID", specific = NULL, nobees = FALSE)
+plot_intersect_phenotype_snp(
+  phenotype_table,
+  phenotype,
+  gwas_table,
+  SNPrank,
+  acc_col = "ACC_ID",
+  specific = NULL,
+  nobees = FALSE
+)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}

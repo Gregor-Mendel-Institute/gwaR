@@ -1,5 +1,5 @@
 # A collection of functions for working with GWAS tables
-# Niklas Schandry, Patrick Hüther 2019
+# Niklas Schandry, Patrick Hüther 2019-2020
 
 
 #' The araGenes object.
@@ -59,6 +59,72 @@ format_gwas <- function(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NUL
   return(gwas_object)
 }
 
+#' Read a GWAS object produced by the sommer package.
+#' @details This function is a flexible version of \code{\link{read_gwas}}
+#' @param sommer_output output of the sommer::gwas() function.
+
+format_sommer_gwas <- function(sommer_output) {
+  gwas_table <- sommer_output %$%
+    scores %>%
+    t %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("Locus") %>%
+    tidyr::separate("Locus", c("chrom","pos"), sep = "_" ) %>%
+    dplyr::mutate(log10_p = tidyselect::ends_with("score"),
+           pv = 10^(-(log10_p)),
+           chrom = as.numeric(chrom),
+           pos = as.numeric(pos),
+           mac = 5# pseudomac
+    )
+
+  fdr_corr <- qvalue::qvalue(p = gwas_table$pv)
+  fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05)]) %>% max() %>% log10() %>% abs()
+  bf_corr <- (0.05/nrow(gwas_table)) %>% log10() %>% abs()
+  gwas_table %<>% dplyr::mutate(
+    Significant = dplyr::case_when(-log10(pv) > bf_corr ~ "Bonferroni",
+                                   -log10(pv) > fdr_thresh ~ "FDR",
+                                   TRUE ~ "Not"))
+  return(gwas_table)
+}
+
+#' Read the GWAS tables produced by gwas-flow
+#' @details A special case of the \code{\link{read_gwas}} function
+#' @param gwasflow_out Results table (csv)
+#' @param permutation_results Results from permutation test (if done)
+#' @seealso \code{\link{read_gwas}}
+
+format_gwasflow <- function(gwasflow_out, permutation_results = NULL) {
+  gwas_table <- vroom::vroom(gwasflow_out) %>%
+    dplyr::mutate(log10_p = -log10(pval),
+           pv = pval,
+           chrom = as.numeric(chr),
+           pos = as.numeric(pos),
+    )
+  fdr_corr <- qvalue::qvalue(p = gwas_table$pv)
+  fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05)]) %>% max() %>% log10() %>% abs()
+  bf_corr <- (0.05/nrow(gwas_table)) %>% log10() %>% abs()
+  if(!is.null(permutation_results)) {
+    sig_perm <- vroom::vroom(permutation_results) %$% -log10(min_p) %>% min
+    gwas_table %<>% dplyr::mutate(
+      Significant = dplyr::case_when(-log10(pv) > sig_perm ~ "Permutation",
+                                     -log10(pv) > bf_corr ~ "Bonferroni",
+                                     -log10(pv) > fdr_thresh ~ "FDR",
+                                     TRUE ~ "Not"))
+    cat(paste("Permutation:", sig_perm ,"\nBF:", bf_corr,"\nFDR:", fdr_thresh))
+  } else{
+    gwas_table %<>% dplyr::mutate(
+      Significant = dplyr::case_when(-log10(pv) > bf_corr ~ "Bonferroni",
+                                     -log10(pv) > fdr_thresh ~ "FDR",
+                                     TRUE ~ "Not"))
+    cat(paste("\nBF:", bf_corr,"\nFDR:", fdr_thresh))
+  }
+
+  return(gwas_table)
+}
+
+
+
+
 #' Read a GWAS result file from limix (csv) and put it into a specific (somewhat arbitrary) format.
 #' @details `read_gwas` returns a tibble containing SNP positions, -log10 transformed p-values and information whether a particular SNP passes a significance threshold after multiple testing correction (Bonferroni or Benjamini-Hochberg)
 #' @param gwas_path Path to a gwas result file containing SNP positions and p-values
@@ -103,13 +169,14 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
   )
 }
 
-#' Plot an interactive map of accessions that carry a SNP of interest
+#' Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields
 #' @param gwas_table Object returned from \code{\link{read_gwas}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param acc_path The path to a table of accessions.
 #' @seealso \code{\link{read_gwas}}
 
-plot_acc_map <- function(gwas_table, SNPrank){
-  allAccessions <- readr::read_csv("~/labshare/lab/accessions/1001genomes-accessions.csv")
+plot_acc_map <- function(gwas_table, SNPrank, acc_path = "~/labshare/lab/accessions/1001genomes-accessions.csv"){
+  allAccessions <- readr::read_csv(acc_path)
   allAccessions %>%
     dplyr::filter(id %in% get_polymorph_acc(gwas_table, SNPrank)$strain) %>%
     leaflet::leaflet(data=.) %>%
@@ -156,7 +223,7 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
   if(list_studies){
     data.table::rbindlist(
       httr::content(httr::GET("https://arapheno.1001genomes.org/rest/study/list/"))
-    ) %>% as_data_frame()
+    ) %>% as.data.frame()
   }
   if(is.null(GeneID)) {
     stop("No GeneID supplied")
@@ -168,7 +235,7 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
                                    GeneID,
                                    "/values")))
   ) %>%
-    dplyr::as_data_frame() %>%
+    as.data.frame() %>%
     dplyr::mutate(ACC_ID = accession_id)
  }
 
@@ -356,7 +423,7 @@ plot_intersect_phenotype_snp <- function(phenotype_table, phenotype, gwas_table,
 }
 
 #' Find genes that are closest to a SNP.
-#' @details Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified. This function always returns the closest annotation. To limit the lookup range use {/link get_overlapping_genes()}  Lookup is done via ensembl plants; requires internet connection.
+#' @details Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified. This function always returns the closest annotation. To limit the lookup range use \code{\link{get_overlapping_genes}}. Lookup is done via ensembl plants; requires internet connection.
 #' @param gwas_table Object returned from \code{\link{read_gwas}} function
 #' @param n_hit The number of SNPs that should be looked up.
 #' @seealso \code{\link{read_gwas}}
@@ -463,17 +530,13 @@ get_overlapping_genes <- function(gwas_table = NULL, n_hit = 1, distance = -1){
 #' @param title Specify plot title
 #' @param subtitle Specify plot subtitle
 #' @param p_filter everything with a log10(p) below this value will not be included in the plot
-#' @param mac_filter everything with a mac (minor allele count) below this will not be plotted.
+#' @param mac_filter everything with a mac (minor allele count) below this will not be plotted. This requires a mac column.
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{plot_annotated_gwas}}
 
 
 
 plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter = 2, mac_filter = 0 ){
-  color_gmi_light <- ("#abd976")
-  color_gmi_dark <- ("#007243")
-  GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
-  names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   ggplot(aes(x=pos, y=log10_p), data = gwas_table %>% dplyr::filter(log10_p > p_filter) %>% dplyr::filter(mac > mac_filter)) +
     # geom_hline(linetype = "dotted", yintercept = bf_corr) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
@@ -481,7 +544,7 @@ plot_gwas <- function(gwas_table, title = "No Title", subtitle = NULL, p_filter 
     ggthemes::theme_few() +
     #  geom_mark_rect(aes(filter = gene != 'NA', label = gene)) +
     geom_point(aes(color = Significant)) +
-    scale_color_manual(values = GWAS_colors) +
+    scale_color_viridis_d() +
     #  ylab("-log10(p)") +
     scale_y_continuous("-log10(pvalue)", breaks =  c(2,4,6,8), labels =  c("2","4","6","8")) +
     ggtitle(title, sub = subtitle) +
@@ -526,10 +589,6 @@ plot_annotated_gwas <- function(gwas_table,
   } else {
     annotations <- gwas_table %>% get_nearest_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   }
-  color_gmi_light <- ("#abd976")
-  color_gmi_dark <- ("#007243")
-  GWAS_colors <- c(color_gmi_dark, color_gmi_light, "grey50")
-  names(GWAS_colors) <- c("Bonferroni", "FDR", "Not")
   #Step1: Bind those tables together
   gwas_table %>%
     dplyr::filter(abs(log10_p) > p_filter) %>%
@@ -540,7 +599,7 @@ plot_annotated_gwas <- function(gwas_table,
     ggrepel::geom_text_repel(aes(label = labs), data = annotations) +
     facet_grid(~chrom, scales = "free_x", switch = "x") +
     ggthemes::theme_few() +
-    scale_color_manual(values = GWAS_colors) +
+    scale_color_viridis_d() +
     scale_y_continuous("-log10(pvalue)", breaks =  c(-2,-4,-6,-8, 2 ,4, 6, 8), labels =  c("2","4","6","8", "2","4","6","8")) +
     ggtitle(title, sub = subtitle) +
     #  guides(color = guide_legend("Adjusted Signifcance")) +
@@ -602,10 +661,10 @@ snp_linkage <- function(gwas_table,
     ## construct call
   }
   if(use_all_acc){
-    if(!is_null(use_phenotype_table)){
+    if(!is.null(use_phenotype_table)){
     message("NOT using supplied genotype table because use_all_acc is TRUE. \n
             Calculating LD based on all sequenced strains (1135 genomes)")}
-    if(is_null(use_phenotype_table)){
+    if(is.null(use_phenotype_table)){
       message("Calculating LD based on all sequenced strains (1135 genomes)")}
     genotypes <- c("88,108,139,159,265,350,351,403,410,424,428,430,
     470,476,484,504,506,531,544,546,628,630,680,681,685,687,728,
@@ -916,3 +975,108 @@ plot_anchored_ld <-   function(gwas_table,
   }
 }
 
+#' Obtain accession ids that carry a SNP of interest from a local SNPmatrix. This is a sister of get_polymorph_acc
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param SNPmatrix The SNPmatrix to use for identifying accessions that carry the relevant SNP.
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_polymorph_acc}}
+
+get_SNPmatrix_acc <- function(gwas_table, SNPrank, SNPmatrix){
+  if(is.null(SNPmatrix)) {
+    stop("No SNPmatrix specified")
+  }
+  dats <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p)) %>%
+    dplyr::slice(SNPrank) %>%
+    dplyr::select(chrom, pos)
+
+  return(SNPmatrix %>%
+           dplyr::filter(chrom ==  dats$chrom, pos == dats$pos) %>%
+           dplyr::select(-chrom, -pos) %>%
+           t %>%
+           magrittr::set_colnames("SNP") %>%
+           as.data.frame() %>%
+           tibble::rownames_to_column("ACC_ID") %>%
+           dplyr::filter(SNP == 1) )
+}
+
+#' Get intersection between phenotype, and local SNPmatrix SNP calls.
+#' @details  Based on a table of phenotypes, a phenotype name, a GWAS table and a rank, and a SNPmatrix returns a table of phenotype values for that gene, where accessions that contain the SNP have TRUE in hasSNP
+#' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
+#' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param acc_col the column that contains accession identifiers.
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
+#' @param SNPmatrix The SNPmatrix to use for identifying accessions that carry the relevant SNP.
+#' @seealso \code{\link{get_phenotype}}
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{intersect_expression_snp}}
+#' @seealso \code{\link{get_SNPmatrix_acc}}
+
+intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL, SNPmatrix) {
+  if(!is.null(specific)){
+    get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+                                              TRUE ~ FALSE))
+  } else {
+    get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+                                              TRUE ~ FALSE))
+  }
+}
+
+#' Split phenotype table by SNP presence and plot
+#' @details Based on a Phenotype table, the name of the phenotype and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
+#' @param phenotype_table a table containing phenotyping measurements, and accession ids (see below)
+#' @param phenotype a specific phenotype from the phenotype table. Must match to a column name of the phenotype table
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param SNPmatrix The SNPmatrix to use for identifying accessions that carry the relevant SNP.
+#' @param acc_col the column that contains accession identifiers.
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
+#' @param nobees Set to true to disable beeswarm geom
+#' @seealso \code{\link{get_phenotype}}
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{intersect_phenotype_snp}}
+
+plot_intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_table, SNPrank, SNPmatrix, acc_col = "ACC_ID", specific = NULL, nobees = FALSE){
+  if(nobees){
+    overplot_geom <- geom_point(alpha = 0.3)
+  } else{
+    overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
+  }
+  if(is.null(specific)){
+    p <-  intersect_phenotype_snpmatrix(phenotype_table = phenotype_table,
+                                        phenotype = phenotype,
+                                        gwas_table = gwas_table,
+                                        SNPrank = SNPrank,
+                                        specific = specific) %>%
+      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      geom_boxplot(aes(fill = hasSNP)) +
+      stat_summary(color = "purple") +
+      overplot_geom +
+      labs(title = paste0("Phenotype values by SNP presence"),
+           x = "SNP present",
+           y = "Value") +
+      theme_bw()
+  } else{
+    p <-  intersect_phenotype_snpmatrix(phenotype_table = phenotype_table,
+                                        phenotype = phenotype,
+                                        gwas_table = gwas_table,
+                                        SNPrank = SNPrank,
+                                        specific = specific) %>%
+      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      geom_boxplot(aes(fill = hasSNP)) +
+      stat_summary(color = "purple") +
+      overplot_geom +
+      labs(title = paste0("Phenotype values by SNP presence"),
+           x = "SNP present",
+           y = "Value") +
+      theme_bw() +
+      facet_grid(reformulate( specific, "Phenotype")) #????
+  }
+
+  return(p)
+}

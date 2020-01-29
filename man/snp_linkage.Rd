@@ -4,10 +4,18 @@
 \alias{snp_linkage}
 \title{Calculate linkage around SNP of interest.}
 \usage{
-snp_linkage(gwas_table, rank, nuc_range = 50000, ld_depth = "1000",
-  ld_stats = c("D.prime", "R.squared"), ld_symmetric = FALSE,
-  use_phenotype_table = NULL, acc_col = "ACC_ID", anchored = FALSE,
-  use_all_acc = FALSE)
+snp_linkage(
+  gwas_table,
+  rank,
+  nuc_range = 50000,
+  ld_depth = "1000",
+  ld_stats = c("D.prime", "R.squared"),
+  ld_symmetric = FALSE,
+  use_phenotype_table = NULL,
+  acc_col = "ACC_ID",
+  anchored = FALSE,
+  use_all_acc = FALSE
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas}} function}

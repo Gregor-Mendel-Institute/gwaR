@@ -37,4 +37,4 @@ Imports:
     gggenes,
     tidyselect,
     forcats
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

@@ -4,10 +4,18 @@
 \alias{plot_anchored_ld}
 \title{Produce a plot of linked SNPs}
 \usage{
-plot_anchored_ld(gwas_table, rank, nuc_range = 50000,
-  ld_stats = c("D.prime"), use_phenotype_table = NULL,
-  use_all_acc = FALSE, acc_col = "ACC_ID", linkage_cutoff = 0.8,
-  LD_legend = FALSE, data_only = FALSE)
+plot_anchored_ld(
+  gwas_table,
+  rank,
+  nuc_range = 50000,
+  ld_stats = c("D.prime"),
+  use_phenotype_table = NULL,
+  use_all_acc = FALSE,
+  acc_col = "ACC_ID",
+  linkage_cutoff = 0.8,
+  LD_legend = FALSE,
+  data_only = FALSE
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas}} function}

@@ -4,8 +4,7 @@
 \alias{format_gwas}
 \title{Read an arbitrary GWAS table.}
 \usage{
-format_gwas(gwas_path, p_col = NULL, chrom_col = NULL,
-  pos_col = NULL)
+format_gwas(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NULL)
 }
 \arguments{
 \item{gwas_path}{A gwas result table}

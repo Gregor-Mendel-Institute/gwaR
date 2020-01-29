@@ -4,9 +4,16 @@
 \alias{plot_annotated_gwas}
 \title{Plot annotated manhattan plot}
 \usage{
-plot_annotated_gwas(gwas_table, title = "No Title", subtitle = NULL,
-  nlabels = 5, labeltype = "GeneId", match_nearest = FALSE,
-  p_filter = 2, mac_filter = 0)
+plot_annotated_gwas(
+  gwas_table,
+  title = "No Title",
+  subtitle = NULL,
+  nlabels = 5,
+  labeltype = "GeneId",
+  match_nearest = FALSE,
+  p_filter = 2,
+  mac_filter = 0
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas}} function}

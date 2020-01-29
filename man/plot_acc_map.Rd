@@ -2,17 +2,23 @@
 % Please edit documentation in R/GWAS_functions.R
 \name{plot_acc_map}
 \alias{plot_acc_map}
-\title{Plot an interactive map of accessions that carry a SNP of interest}
+\title{Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields}
 \usage{
-plot_acc_map(gwas_table, SNPrank)
+plot_acc_map(
+  gwas_table,
+  SNPrank,
+  acc_path = "~/labshare/lab/accessions/1001genomes-accessions.csv"
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{read_gwas}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
+
+\item{acc_path}{The path to a table of accessions.}
 }
 \description{
-Plot an interactive map of accessions that carry a SNP of interest
+Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields
 }
 \seealso{
 \code{\link{read_gwas}}

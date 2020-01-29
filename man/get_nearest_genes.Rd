@@ -15,7 +15,7 @@ get_nearest_genes(gwas_table = NULL, n_hit = 1)
 Find genes that are closest to a SNP.
 }
 \details{
-Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified. This function always returns the closest annotation. To limit the lookup range use {/link get_overlapping_genes()}  Lookup is done via ensembl plants; requires internet connection.
+Based on a GWAS table, returns the gene annotation that is closest to each SNP for the number of SNP specified. This function always returns the closest annotation. To limit the lookup range use \code{\link{get_overlapping_genes}}. Lookup is done via ensembl plants; requires internet connection.
 }
 \seealso{
 \code{\link{read_gwas}}
