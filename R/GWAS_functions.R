@@ -2,7 +2,7 @@
 # Niklas Schandry, Patrick Hüther 2019-2020
 
 
-#' The araGenes object.
+#' The araGenome object.
 araGenome <- biomaRt::getBM(c("ensembl_gene_id",
                              "chromosome_name",
                              "start_position",
@@ -12,7 +12,7 @@ araGenome <- biomaRt::getBM(c("ensembl_gene_id",
                              "transcript_biotype"),
                            mart = biomaRt::useMart(biomart = "plants_mart", dataset = "athaliana_eg_gene", host = 'plants.ensembl.org'))
 
-#' A nicely formatted GRanges object
+#' araGenome as a nicely formatted GRanges object
 araGenes <- araGenome %>%
   dplyr::rename(GeneId=ensembl_gene_id) %>%
   dplyr::mutate(strand=dplyr::case_when(strand == 1 ~ "+",
@@ -649,9 +649,9 @@ snp_linkage <- function(gwas_table,
 
   region_lower <- gwas_table %>%
     dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
-  if(region_lower < 0) {
-    region_lower <- 0
-    message("Nucleotide range out of bounds (negative start). Set start to 0.")
+  if(region_lower < 1) {
+    region_lower <- 1
+    message("Nucleotide range out of bounds (negative start). Set start to 1.")
   }
 
   region <- gwas_table %>%
@@ -871,6 +871,12 @@ plot_anchored_ld <-   function(gwas_table,
                         use_all_acc = use_all_acc,
                         ld_stats = ld_stats)
 
+  # Check if this actually produced results
+
+  if(anc_ld %>% na.omit() %>% nrow() == 0) {
+    stop("LD calculation returned only NAs.")
+  }
+
   # Define SNP details.
 
   snp_pos <- gwas_table %>%
@@ -882,9 +888,9 @@ plot_anchored_ld <-   function(gwas_table,
 
   start_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
-  if(start_pos < 0) {
-    start_pos <- 0 # No message, because snp_linkage will issue a message.
-}
+  if(start_pos < 1) {
+    start_pos <- 1 # No message, because snp_linkage will issue a message.
+  }
   end_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
 
@@ -908,7 +914,6 @@ plot_anchored_ld <-   function(gwas_table,
         ";end=", end_pos,
         ";type=snps")
     ), col_types = "iifccccccccccc")
-
   ## Labels for the gene plots
 
   gene_labels <- araGenome %>%
@@ -979,6 +984,7 @@ plot_anchored_ld <-   function(gwas_table,
   } else{
     return(p)
   }
+
 }
 
 #' Obtain accession ids that carry a SNP of interest from a local SNPmatrix. This is a sister of get_polymorph_acc

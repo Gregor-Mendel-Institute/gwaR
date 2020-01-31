@@ -9,7 +9,7 @@ snp_linkage(
   rank,
   nuc_range = 50000,
   ld_depth = "1000",
-  ld_stats = c("D.prime", "R.squared"),
+  ld_stats = "D.prime",
   ld_symmetric = FALSE,
   use_phenotype_table = NULL,
   acc_col = "ACC_ID",
@@ -26,7 +26,7 @@ snp_linkage(
 
 \item{ld_depth}{Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)}
 
-\item{ld_stats}{The LD statistics, see SNPStats::ld}
+\item{ld_stats}{The LD statistics, see SNPStats::ld. Default is D.prime}
 
 \item{ld_symmetric}{Should a symmetric matrix be returned? see SNPStats::ld}
 

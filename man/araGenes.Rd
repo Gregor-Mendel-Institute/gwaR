@@ -3,12 +3,12 @@
 \docType{data}
 \name{araGenes}
 \alias{araGenes}
-\title{A nicely formatted GRanges object}
+\title{araGenome as a nicely formatted GRanges object}
 \format{An object of class \code{GRanges} of length 32556.}
 \usage{
 araGenes
 }
 \description{
-A nicely formatted GRanges object
+araGenome as a nicely formatted GRanges object
 }
 \keyword{datasets}

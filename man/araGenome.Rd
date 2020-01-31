@@ -3,12 +3,12 @@
 \docType{data}
 \name{araGenome}
 \alias{araGenome}
-\title{The araGenes object.}
+\title{The araGenome object.}
 \format{An object of class \code{data.frame} with 32841 rows and 7 columns.}
 \usage{
 araGenome
 }
 \description{
-The araGenes object.
+The araGenome object.
 }
 \keyword{datasets}
