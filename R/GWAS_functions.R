@@ -626,7 +626,7 @@ plot_annotated_gwas <- function(gwas_table,
 #' @param rank Rank of the SNP of interest
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
 #' @param ld_depth Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)
-#' @param ld_stats The LD statistics, see SNPStats::ld
+#' @param ld_stats The LD statistics, see SNPStats::ld. Default is D.prime
 #' @param ld_symmetric Should a symmetric matrix be returned? see SNPStats::ld
 #' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.
 #' @param use_all_acc If true, will override use_phenotype_table and use all 1135 sequenced accessions.
@@ -637,7 +637,7 @@ snp_linkage <- function(gwas_table,
                         rank,
                         nuc_range = 50000,
                         ld_depth = "1000",
-                        ld_stats = c("D.prime", "R.squared"),
+                        ld_stats = "D.prime",
                         ld_symmetric = FALSE,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
@@ -882,13 +882,15 @@ plot_anchored_ld <-   function(gwas_table,
 
   start_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
-
+  if(start_pos < 0) {
+    start_pos <- 0 # No message, because snp_linkage will issue a message.
+}
   end_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
 
   ## Define genotypes for API call
   if(is.null(use_phenotype_table)){
-    message("Calculating LD based on strains that carry SNP")
+    message("Calculating LD based on strains that carry SNP. This could be a bad idea!")
     genotypes <- stringr::str_flatten(get_polymorph_acc(gwas_table = gwas_table, SNPrank = rank)$strain, collapse = ",")
   }
   if(!is.null(use_phenotype_table)){
@@ -905,8 +907,7 @@ plot_anchored_ld <-   function(gwas_table,
         ";start=", start_pos,
         ";end=", end_pos,
         ";type=snps")
-    ), col_types = "iifccccccccccc") %>%
-    dplyr::mutate(chrom = chr)
+    ), col_types = "iifccccccccccc")
 
   ## Labels for the gene plots
 
@@ -927,7 +928,7 @@ plot_anchored_ld <-   function(gwas_table,
     tidyr::pivot_longer(tidyselect::matches(":")) %>%
     na.omit %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
-    dplyr::left_join(., snp_impacts, by = c("pos","chrom")) %>%
+    dplyr::left_join(., snp_impacts, by = c("pos")) %>%
     dplyr::mutate(layer_var = effect_impact)
 
   ## Build Plot
