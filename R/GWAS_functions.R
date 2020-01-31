@@ -70,7 +70,7 @@ format_sommer_gwas <- function(sommer_output) {
     as.data.frame() %>%
     tibble::rownames_to_column("Locus") %>%
     tidyr::separate("Locus", c("chrom","pos"), sep = "_" ) %>%
-    dplyr::mutate(log10_p = tidyselect::ends_with("score"),
+    dplyr::mutate(log10_p = tidyverse::select(tidyselect::ends_with("score")),
            pv = 10^(-(log10_p)),
            chrom = as.numeric(chrom),
            pos = as.numeric(pos),
