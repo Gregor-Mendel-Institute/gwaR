@@ -64,19 +64,20 @@ format_gwas <- function(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NUL
 #' @param sommer_output output of the sommer::gwas() function.
 
 format_sommer_gwas <- function(sommer_output) {
-  gwas_table <- sommer_output %$%
+  sommer_scores <- sommer_output %$%
     scores %>%
     t %>%
-    as.data.frame() %>%
+    as.data.frame()
+  score_col <- sommer_scores %>% dplyr::select(tidyselect::ends_with("score")) %>% colnames()
+  gwas_table <- sommer_scores %>%
     tibble::rownames_to_column("Locus") %>%
     tidyr::separate("Locus", c("chrom","pos"), sep = "_" ) %>%
-    dplyr::mutate(log10_p = tidyverse::select(tidyselect::ends_with("score")),
-           pv = 10^(-(log10_p)),
-           chrom = as.numeric(chrom),
-           pos = as.numeric(pos),
-           mac = 5# pseudomac
+    dplyr::mutate(log10_p = .data[[paste(score_col)]],
+                  pv = 10^(-(log10_p)),
+                  chrom = as.numeric(chrom),
+                  pos = as.numeric(pos),
+                  mac = 5# pseudomac
     )
-
   fdr_corr <- qvalue::qvalue(p = gwas_table$pv)
   fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05)]) %>% max() %>% log10() %>% abs()
   bf_corr <- (0.05/nrow(gwas_table)) %>% log10() %>% abs()
