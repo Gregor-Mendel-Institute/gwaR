@@ -647,9 +647,16 @@ snp_linkage <- function(gwas_table,
   # Step 1: Download variant table
   ## Define region for API call
 
+  region_lower <- gwas_table %>%
+    dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+  if(region_lower < 0) {
+    region_lower <- 0
+    message("Nucleotide range out of bounds (negative start). Set start to 0.")
+  }
+
   region <- gwas_table %>%
     dplyr::slice(rank) %>%
-    {paste0("Chr", .$chrom, ":", .$pos - as.numeric(nuc_range) / 2, ".." , .$pos + as.numeric(nuc_range) / 2)}
+    {paste0("Chr", .$chrom, ":", region_lower, ".." , .$pos + as.numeric(nuc_range) / 2)}
 
   ## Define genotypes for API call
   if(is.null(use_phenotype_table)){
@@ -663,7 +670,7 @@ snp_linkage <- function(gwas_table,
   }
   if(use_all_acc){
     if(!is.null(use_phenotype_table)){
-    message("NOT using supplied genotype table because use_all_acc is TRUE. \n
+      message("NOT using supplied genotype table because use_all_acc is TRUE. \n
             Calculating LD based on all sequenced strains (1135 genomes)")}
     if(is.null(use_phenotype_table)){
       message("Calculating LD based on all sequenced strains (1135 genomes)")}
@@ -770,7 +777,7 @@ snp_linkage <- function(gwas_table,
                        "/type/fullgenome/format/vcf")
 
   ## Make tempfile
-
+  cat(subset_url)
   tmp <- tempfile(fileext = ".vcf")
 
   ## Write vcf table to tempfile
@@ -779,10 +786,7 @@ snp_linkage <- function(gwas_table,
 
   message(paste0("Downloaded genotype vcf to ", tmp))
   # Step 2 Read vcf table from tempfile
-  # vcf_info <- pegas::VCFloci(tmp)
 
-
-  #variants_for_linkage <- pegas::read.vcf(tmp, to = nuc_range + 1)
   tmp_vcf <- VariantAnnotation::readVcf(tmp)
   tmp_vcf <- tmp_vcf[VariantAnnotation::isSNV(tmp_vcf)]
   tmp_SM <- VariantAnnotation::genotypeToSnpMatrix(tmp_vcf)
@@ -799,8 +803,7 @@ snp_linkage <- function(gwas_table,
   # The anchored approach: Calculate LD not for all vs all in a region, but for a region against one specific SNP.
 
   if(anchored){
-
-    region <- gwas_table %>%
+      region <- gwas_table %>%
       dplyr::slice(rank) %>%
       {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
     message(paste0("Anchored analysis, with ", region,  " as anchor"))
