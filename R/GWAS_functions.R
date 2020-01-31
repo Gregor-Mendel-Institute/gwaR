@@ -905,7 +905,8 @@ plot_anchored_ld <-   function(gwas_table,
         ";start=", start_pos,
         ";end=", end_pos,
         ";type=snps")
-    ), col_types = "iifcccccccccccc")
+    ), col_types = "iifccccccccccc") %>%
+    dplyr::mutate(chrom = chr)
 
   ## Labels for the gene plots
 
@@ -926,7 +927,7 @@ plot_anchored_ld <-   function(gwas_table,
     tidyr::pivot_longer(tidyselect::matches(":")) %>%
     na.omit %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
-    dplyr::left_join(., snp_impacts) %>%
+    dplyr::left_join(., snp_impacts, by = c("pos","chrom")) %>%
     dplyr::mutate(layer_var = effect_impact)
 
   ## Build Plot
