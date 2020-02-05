@@ -945,6 +945,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
       as.matrix() %>%
       t()
+
     storage.mode(anchor_tmpmatrix) <- "raw"
 
     anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
