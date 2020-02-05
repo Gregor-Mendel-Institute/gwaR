@@ -888,7 +888,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
   chrom <- gwas_table %>%
     dplyr::slice(rank) %>%
     dplyr::select(chrom) %>%
-    unique() %>%
+    unique()
 
   if(region_lower < 1) {
     region_lower <- 1
