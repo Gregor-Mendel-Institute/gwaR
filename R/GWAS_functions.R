@@ -888,7 +888,8 @@ snp_linkage_snpmatrix <- function(gwas_table,
   chrom <- gwas_table %>%
     dplyr::slice(rank) %>%
     dplyr::select(chrom) %>%
-    unique()
+    unique() %>%
+    paste()
 
   if(region_lower < 1) {
     region_lower <- 1
@@ -909,8 +910,6 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
 
   pos = c(region_lower:region_upper)
-  cat("pos")
-  cat(pos)
   cat("chrom")
   cat(chrom)
   cat("genotypes")
