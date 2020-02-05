@@ -909,10 +909,16 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
 
   pos = c(region_lower:region_upper)
+  cat("pos")
+  cat(pos)
+  cat("chrom")
+  cat(chrom)
+  cat("genotypes")
+  cat(genotypes)
 
   # Very base R subsetting
   tmpmatrix <- fst::fst(snpmatrix_path)
-  tmpmatrix <- tmpmatrix[tmpmatrix$chrom == chrom & tmpmatrix$pos %in% pos, paste(c(genotypes, "chrom", "pos"))]
+  tmpmatrix <- tmpmatrix[(tmpmatrix$chrom == chrom) & (tmpmatrix$pos %in% pos), paste(c(genotypes, "chrom", "pos"))]
   rownames(tmpmatrix) <- paste(tmpmatrix$chrom, tmpmatrix$pos, sep = "_")
   tmpmatrix <- tmpmatrix[, genotypes]
   tmpmatrix <- tmpmatrix %>%
@@ -939,7 +945,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       dplyr::slice(rank) %>%
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
-    anchor_tmpmatrix <- anchor_tmpmatrix[anchor_tmpmatrix$chrom == chrom & anchor_tmpmatrix$pos == pos, paste(c(genotypes, "chrom", "pos"))]
+    anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == pos), paste(c(genotypes, "chrom", "pos"))]
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
     anchor_tmpmatrix <- anchor_tmpmatrix[, genotypes]
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
