@@ -919,7 +919,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
   tmpmatrix <- fst::fst(snpmatrix_path)
   tmpmatrix <- tmpmatrix[(tmpmatrix$chrom == chrom) & (tmpmatrix$pos %in% pos), paste(c(genotypes, "chrom", "pos"))]
   rownames(tmpmatrix) <- paste(tmpmatrix$chrom, tmpmatrix$pos, sep = "_")
-  tmpmatrix <- tmpmatrix[, genotypes]
+  tmpmatrix <- tmpmatrix[, paste(genotypes)]
   tmpmatrix <- tmpmatrix %>%
     as.matrix() %>%
     t()
@@ -946,7 +946,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
     anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == pos), paste(c(genotypes, "chrom", "pos"))]
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
-    anchor_tmpmatrix <- anchor_tmpmatrix[, genotypes]
+    anchor_tmpmatrix <- anchor_tmpmatrix[, paste(genotypes)]
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
       as.matrix() %>%
       t()
