@@ -905,7 +905,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
   pos = c(region_lower:region_upper)
 
   tmpmatrix <- fst::fst(snpmatrix_path) %>%
-    .[.$chrom == chrom & .$pos %in% pos, c(genotypes, "chrom", "pos")] %>%
+    .[.$chrom == chrom & .$pos %in% pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))] %>%
     as.matrix() %>%
     t()
   storage.mode(tmpmatrix) <- "raw"
@@ -929,7 +929,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       dplyr::slice(rank) %>%
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path) %>%
-      .[.$chrom == chrom & .$pos %in% anchor_pos, c(genotypes, "chrom", "pos")] %>%
+      .[.$chrom == chrom & .$pos %in% anchor_pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))] %>%
       as.matrix() %>%
       t()
     storage.mode(anchor_tmpmatrix) <- "raw"
