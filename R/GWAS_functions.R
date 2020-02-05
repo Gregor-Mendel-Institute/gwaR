@@ -84,7 +84,8 @@ format_sommer_gwas <- function(sommer_output) {
   gwas_table %<>% dplyr::mutate(
     Significant = dplyr::case_when(-log10(pv) > bf_corr ~ "Bonferroni",
                                    -log10(pv) > fdr_thresh ~ "FDR",
-                                   TRUE ~ "Not"))
+                                   TRUE ~ "Not")) %>%
+  dplyr::arrange(dplyr::desc(log10_p))
   return(gwas_table)
 }
 
@@ -644,11 +645,14 @@ snp_linkage <- function(gwas_table,
                         anchored = FALSE,
                         use_all_acc = FALSE) {
 
+  gwas_table <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p))
   # Step 1: Download variant table
   ## Define region for API call
   region_lower <- gwas_table %>%
-  dplyr::arrange(dplyr::desc(log10_p)) %>%
     dplyr::slice(rank) %>% {.$pos - (nuc_range / 2)}
+  region_upper <- gwas_table %>%
+    dplyr::slice(rank) %>% {.$pos + (nuc_range / 2)}
 
   if(region_lower < 1) {
     region_lower <- 1
@@ -657,7 +661,7 @@ snp_linkage <- function(gwas_table,
 
   region <- gwas_table %>%
     dplyr::slice(rank) %>%
-    {paste0("Chr", .$chrom, ":", region_lower, ".." , .$pos + as.numeric(nuc_range) / 2)}
+    {paste0("Chr", .$chrom, ":", region_lower, ".." , region_upper)}
 
   ## Define genotypes for API call
   if(is.null(use_phenotype_table)){
@@ -778,14 +782,13 @@ snp_linkage <- function(gwas_table,
                        "/type/fullgenome/format/vcf")
 
   ## Make tempfile
-  cat(subset_url)
   tmp <- tempfile(fileext = ".vcf")
 
   ## Write vcf table to tempfile
 
   writeLines( httr::content( httr::GET(subset_url ) ), tmp)
 
-  message(paste0("Downloaded genotype vcf to ", tmp))
+  message(paste0("Downloaded genotype vcf from ",subset_url," to: ", tmp,"\n"))
   # Step 2 Read vcf table from tempfile
 
   tmp_vcf <- VariantAnnotation::readVcf(tmp)
