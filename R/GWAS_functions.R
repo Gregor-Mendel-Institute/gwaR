@@ -908,12 +908,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
     ## construct call
   }
 
-
   pos = c(region_lower:region_upper)
-  cat("chrom")
-  cat(chrom)
-  cat("genotypes")
-  cat(genotypes)
 
   # Very base R subsetting
   tmpmatrix <- fst::fst(snpmatrix_path)
@@ -925,7 +920,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
     t()
   storage.mode(tmpmatrix) <- "raw"
 
-  SM_for_linkage <-  new("SnpMatrix",tmpmatrix)
+  SM_for_linkage <- methods::new("SnpMatrix", tmpmatrix)
 
   # Step 4 calculate ld on genotypes table of SM; return
   if(!anchored){
@@ -952,7 +947,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       t()
     storage.mode(anchor_tmpmatrix) <- "raw"
 
-    anchor_SM <-  new("SnpMatrix",anchor_tmpmatrix)
+    anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
 
     ld_tab <- snpStats::ld(x = anchor_SM , y = SM_for_linkage, stats = ld_stats)
   }
