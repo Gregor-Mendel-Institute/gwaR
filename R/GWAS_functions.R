@@ -905,7 +905,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
   pos = c(region_lower:region_upper)
 
   tmpmatrix <- fst::fst(snpmatrix_path) %>%
-    .[.$chrom == chrom & .$pos %in% pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))] %>%
+    {.[.$chrom == chrom & .$pos %in% pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))]} %>%
     as.matrix() %>%
     t()
   storage.mode(tmpmatrix) <- "raw"
@@ -1158,15 +1158,17 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
   end_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
 
-  ## Define genotypes for API call
-  if(is.null(use_phenotype_table)){
-    message("Calculating LD based on strains that carry SNP. This could be a bad idea!")
-    genotypes <- stringr::str_flatten(get_polymorph_acc(gwas_table = gwas_table, SNPrank = rank)$strain, collapse = ",")
-  }
-  if(!is.null(use_phenotype_table)){
-    message("Calculating LD based on all strains in phenotype table")
-    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+  ## Define genotypes
 
+  if(is.null(use_phenotype_table)){
+    message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
+    genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
+  }
+
+  if(!is.null(use_phenotype_table)){
+    message("Calculating LD based on all strains in phenotype table,")
+    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+    ## construct call
   }
   ## construct call (this directly reads the csv from 1001genomes)
   snp_impacts <- httr::content(
