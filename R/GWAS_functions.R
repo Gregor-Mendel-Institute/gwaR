@@ -646,8 +646,8 @@ snp_linkage <- function(gwas_table,
 
   # Step 1: Download variant table
   ## Define region for API call
-    region_lower <- gwas_table %>%
-    dplyr::arrange(dplyr::desc(log10_p))
+  region_lower <- gwas_table %>%
+  dplyr::arrange(dplyr::desc(log10_p)) %>%
     dplyr::slice(rank) %>% {.$pos - (nuc_range / 2)}
 
   if(region_lower < 1) {
