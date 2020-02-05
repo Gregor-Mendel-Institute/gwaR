@@ -880,7 +880,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
   chrom <- gwas_table %>%
     dplyr::slice(rank) %>%
     dplyr::select(chrom) %>%
-    unique()
+    unique() %>%
 
   if(region_lower < 1) {
     region_lower <- 1
@@ -892,12 +892,12 @@ snp_linkage_snpmatrix <- function(gwas_table,
   ## Define genotypes for subsetting
   if(is.null(use_phenotype_table)){
     message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
-    genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
+    genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit()
   }
 
   if(!is.null(use_phenotype_table)){
     message("Calculating LD based on all strains in phenotype table,")
-    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+    genotypes <- levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)])))
     ## construct call
   }
 
@@ -906,7 +906,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
   # Very base R subsetting
   tmpmatrix <- fst::fst(snpmatrix_path)
-  tmpmatrix <- tmpmatrix[tmpmatrix$chrom == chrom & tmpmatrix$pos %in% pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))]
+  tmpmatrix <- tmpmatrix[tmpmatrix$chrom == chrom & tmpmatrix$pos %in% pos, paste(c(genotypes, "chrom", "pos"))]
   rownames(tmpmatrix) <- paste(tmpmatrix$chrom, tmpmatrix$pos, sep = "_")
   tmpmatrix <- tmpmatrix[, genotypes]
   tmpmatrix <- tmpmatrix %>%
@@ -933,7 +933,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       dplyr::slice(rank) %>%
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
-    anchor_tmpmatrix <- anchor_tmpmatrix[anchor_tmpmatrix$chrom == chrom & anchor_tmpmatrix$pos == pos, c(paste(c(genotypes, "chrom", "pos"), sep = ","))]
+    anchor_tmpmatrix <- anchor_tmpmatrix[anchor_tmpmatrix$chrom == chrom & anchor_tmpmatrix$pos == pos, paste(c(genotypes, "chrom", "pos"))]
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
     anchor_tmpmatrix <- anchor_tmpmatrix[, genotypes]
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
