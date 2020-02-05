@@ -5,6 +5,7 @@ importFrom("magrittr", "%T>%")
 importFrom("magrittr", "%$%")
 importFrom("stats", "na.omit", "reformulate")
 importFrom("data.table", "rbindlist")
+importFrom("methods", "new")
 import(ggplot2)
 export(read_gwas,
        get_polymorph_acc,
@@ -24,7 +25,9 @@ export(read_gwas,
        plot_gwas,
        plot_annotated_gwas,
        snp_linkage,
+       snp_linkage_snpmatrix,
        format_sommer_gwas,
        format_gwasflow,
        format_gwas,
-       plot_anchored_ld)
+       plot_anchored_ld,
+       plot_anchored_ld_snpmatrix )

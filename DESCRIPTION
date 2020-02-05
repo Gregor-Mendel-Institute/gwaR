@@ -23,6 +23,7 @@ Imports:
     leaflet,
     magrittr,
     ggbeeswarm,
+    methods,
     plyranges,
     httr,
     stringr,
@@ -36,5 +37,6 @@ Imports:
     snpStats,
     gggenes,
     tidyselect,
+    fst,
     forcats
 RoxygenNote: 7.0.2

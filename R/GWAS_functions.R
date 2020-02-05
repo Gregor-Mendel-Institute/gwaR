@@ -650,9 +650,11 @@ snp_linkage <- function(gwas_table,
   # Step 1: Download variant table
   ## Define region for API call
   region_lower <- gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos - (nuc_range / 2)}
+    dplyr::slice(rank) %>%
+    {.$pos - (nuc_range / 2)}
   region_upper <- gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos + (nuc_range / 2)}
+    dplyr::slice(rank) %>%
+    {.$pos + (nuc_range / 2)}
 
   if(region_lower < 1) {
     region_lower <- 1
@@ -810,7 +812,7 @@ snp_linkage <- function(gwas_table,
       region <- gwas_table %>%
       dplyr::slice(rank) %>%
       {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
-    message(paste0("Anchored analysis, with ", region,  " as anchor"))
+    message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
     # Start with getting the anchor information, similar to above, but the region is only one position.
     anchor_url <-  paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
                           genotypes,
@@ -822,15 +824,117 @@ snp_linkage <- function(gwas_table,
 
     writeLines( httr::content( httr::GET(anchor_url ) ), anchor_tmp)
 
-    message(paste0("Downloaded anchor vcf to ", anchor_tmp))
+    message(paste0("Downloaded anchor vcf from", anchor_url ," to ", anchor_tmp,"\n"))
 
     anchor_vcf <- VariantAnnotation::readVcf(anchor_tmp)
 
-    anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
+    #anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
 
     anchor_SM <- VariantAnnotation::genotypeToSnpMatrix(anchor_vcf)
 
     anchor_SM <- anchor_SM$genotypes
+
+    ld_tab <- snpStats::ld(x = anchor_SM , y = SM_for_linkage, stats = ld_stats)
+  }
+  return(ld_tab)
+}
+
+#' Calculate linkage around SNP of interest.
+#' @details Details are fuzzy right now
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param rank Rank of the SNP of interest
+#' @param snpmatrix_path the path to the SNPmatrix in fst format.
+#' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
+#' @param ld_depth Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)
+#' @param ld_stats The LD statistics, see SNPStats::ld. Default is D.prime
+#' @param ld_symmetric Should a symmetric matrix be returned? see SNPStats::ld
+#' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions in the SNPmatrix are used. Accessions are assumed to be named as numbers.
+#' @param acc_col the column name of the accession column in the phenotype table
+#' @param anchored Perform anchored analysis. If TRUE Linkage will only be estimated for the SNP of interest, and the surrounding ones, but not between surrounding SNPs.
+
+snp_linkage_snpmatrix <- function(gwas_table,
+                        rank,
+                        snpmatrix_path = NULL,
+                        nuc_range = 50000,
+                        ld_depth = "1000",
+                        ld_stats = "D.prime",
+                        ld_symmetric = FALSE,
+                        use_phenotype_table = NULL,
+                        acc_col = "ACC_ID",
+                        anchored = FALSE) {
+
+  if(!file.exists(snpmatrix_path) | !(tools::file_ext(snpmatrix_path) == "fst" )) {
+    stop("Please point to snpmatrix in fst format")
+  }
+
+  gwas_table <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p))
+  # Step 1: Download variant table
+  ## Define region for API call
+  region_lower <- gwas_table %>%
+    dplyr::slice(rank) %>%
+    {.$pos - (nuc_range / 2)}
+  region_upper <- gwas_table %>%
+    dplyr::slice(rank) %>%
+    {.$pos + (nuc_range / 2)}
+  chrom <- gwas_table %>%
+    dplyr::slice(rank) %>%
+    dplyr::select(chrom) %>%
+    unique()
+
+  if(region_lower < 1) {
+    region_lower <- 1
+    message("Nucleotide range out of bounds (negative start). Set start to 1.")
+  }
+
+
+
+  ## Define genotypes for subsetting
+  if(is.null(use_phenotype_table)){
+    message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
+    genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
+  }
+
+  if(!is.null(use_phenotype_table)){
+    message("Calculating LD based on all strains in phenotype table,")
+    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+    ## construct call
+  }
+
+
+  pos = c(region_lower:region_upper)
+
+  tmpmatrix <- fst::fst(snpmatrix_path) %>%
+    .[.$chrom == chrom & .$pos %in% pos, c(genotypes, "chrom", "pos")] %>%
+    as.matrix() %>%
+    t()
+  storage.mode(tmpmatrix) <- "raw"
+
+  SM_for_linkage <-  new("SnpMatrix",tmpmatrix)
+
+  # Step 4 calculate ld on genotypes table of SM; return
+  if(!anchored){
+    ld_tab <- snpStats::ld(SM_for_linkage, depth = ld_depth, stats = ld_stats, symmetric = ld_symmetric )
+  }
+
+  # The anchored approach: Calculate LD not for all vs all in a region, but for a region against one specific SNP.
+
+  if(anchored){
+    region <- gwas_table %>%
+      dplyr::slice(rank) %>%
+      {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
+    message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
+    # Start with getting the anchor information, similar to above, but the region is only one position.
+    anchor_pos <- gwas_table %>%
+      dplyr::slice(rank) %>%
+      .$pos
+    anchor_tmpmatrix <- fst::fst(snpmatrix_path) %>%
+      .[.$chrom == chrom & .$pos %in% anchor_pos, c(genotypes, "chrom", "pos")] %>%
+      as.matrix() %>%
+      t()
+    storage.mode(anchor_tmpmatrix) <- "raw"
+
+    anchor_SM <-  new("SnpMatrix",anchor_tmpmatrix)
 
     ld_tab <- snpStats::ld(x = anchor_SM , y = SM_for_linkage, stats = ld_stats)
   }
@@ -872,8 +976,164 @@ plot_anchored_ld <-   function(gwas_table,
                         nuc_range = nuc_range,
                         anchored = TRUE,
                         use_phenotype_table = use_phenotype_table,
-                        use_all_acc = use_all_acc,
                         ld_stats = ld_stats)
+
+  # Check if this actually produced results
+
+  if(anc_ld %>% na.omit() %>% nrow() == 0) {
+    stop("LD calculation returned only NAs.")
+  }
+
+  # Define SNP details.
+
+  snp_pos <- gwas_table %>%
+    dplyr::slice(rank) %>% .$pos
+
+  chrom = gwas_table %>%
+    dplyr::slice(rank) %>%
+    .$chrom
+
+  start_pos = gwas_table %>%
+    dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+  if(start_pos < 1) {
+    start_pos <- 1 # No message, because snp_linkage will issue a message.
+  }
+  end_pos = gwas_table %>%
+    dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
+
+  ## Define genotypes for API call
+  if(is.null(use_phenotype_table)){
+    message("Calculating LD based on strains that carry SNP. This could be a bad idea!")
+    genotypes <- stringr::str_flatten(get_polymorph_acc(gwas_table = gwas_table, SNPrank = rank)$strain, collapse = ",")
+  }
+  if(!is.null(use_phenotype_table)){
+    message("Calculating LD based on all strains in phenotype table")
+    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+
+  }
+  ## construct call (this directly reads the csv from 1001genomes)
+  snp_impacts <- httr::content(
+    httr::GET(
+      paste0(
+        "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
+        ";chr=", chrom,
+        ";start=", start_pos,
+        ";end=", end_pos,
+        ";type=snps")
+    ), col_types = "iifccccccccccc")
+  ## Labels for the gene plots
+
+  gene_labels <- araGenome %>%
+    dplyr::filter(chromosome_name == chrom, start_position %in% c(start_pos:end_pos), end_position %in% c(start_pos:end_pos)) %>%
+    dplyr::mutate(gene = ensembl_gene_id,
+                  molecule = 0,
+                  start = start_position,
+                  end = end_position,
+                  direction = strand,
+                  strand = dplyr::case_when(strand == -1 ~ "reverse", TRUE ~ "forward"),
+                  layer_var = "ORF")
+
+  ## Transforming LD table into more plotable table.
+
+  plot_data <- anc_ld %>%
+    dplyr::as_tibble() %>%
+    tidyr::pivot_longer(tidyselect::matches(":")) %>%
+    na.omit %>%
+    dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
+    dplyr::left_join(., snp_impacts, by = c("pos")) %>%
+    dplyr::mutate(layer_var = effect_impact)
+
+  ## Build Plot
+
+  p <- ggplot(data = plot_data) +
+    # Tile Geom for LD values
+    geom_tile(aes(x = pos , color = value, y = 0, height = 2),
+              data = plot_data %>% dplyr::mutate(layer_var = "LD") %>% dplyr::filter(layer_var == "LD")) +
+    # Line denoting SNP of interest
+    geom_vline(aes(xintercept = snp_pos), color = "darkred") +
+    # Modifier SNPs
+    geom_point(aes(x= pos, y = 0, shape = effect_impact), size = 2.5, alpha = 0.8,
+               data = plot_data %>% dplyr::filter(value >= linkage_cutoff)) +
+
+    # color scale
+    scale_color_viridis_c(option = "plasma", direction = -1) +
+    # Gene Arrows
+    gggenes::geom_gene_arrow(aes(xmin = start, xmax = end, y = molecule, fill = gene, forward = direction), data = gene_labels) +
+    # Gene labels
+    gggenes::geom_gene_label(aes(xmin = start, xmax = end, y = molecule, fill = gene, label = gene), data = gene_labels) + # Gene labels
+    # Minimal Theme
+    theme_minimal() +
+    # ylim(-0.1,0.1) +
+    facet_grid(rows = vars(layer_var %>% forcats::fct_relevel("HIGH", "MODERATE", "LOW", "MODIFIER", "LD", "ORF")), switch = "y") +
+    # Theme adjusments, mainly removing the y-axis
+    theme(axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          panel.spacing.y = unit(0, "lines"),
+          plot.background = element_rect(fill = "white"),
+          legend.position = "bottom",
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank())
+  if(isFALSE(LD_legend)){
+    p <- p +
+      guides(color = FALSE,
+             shape = FALSE,
+             fill = guide_legend("Gene ID")) # Color guide
+  } else
+    p <- p +
+    guides(color = guide_colorbar(title = "Linkage"),
+           shape = FALSE,
+           fill = guide_legend("Gene ID")) # Color guide
+
+  if(data_only){
+    return(plot_data)
+  } else{
+    return(p)
+  }
+
+}
+
+#' Produce a plot of linked SNPs based on a SNPMatrix
+#' @details This function takes a gwas table and a rank and produces a plot that illustrates, SNPs that are within nuc_range around the SNP, the degree of linkage, the impact of the other SNPs and a track of gene annotations to easily identify linked SNPs that have a high impact.
+#' @details Impact according to 1001genomes.org
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param rank Rank of the SNP of interest
+#' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
+#' @param snpmatrix_path filepath to SNPmatrix in fst format.
+#' @param ld_stats The LD statistics, see SNPStats::ld
+#' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.
+#' @param acc_col Name of the column containing accession identifiers in the phenotype table
+#' @param linkage_cutoff Only SNPs that have an LD values >= this will be plotted (default 0.8)
+#' @param LD_legend Toggle color legend for LD. Off by default.
+#' @param data_only If true does not plot, only returns the data used for plotting.
+
+plot_anchored_ld_snpmatrix <-   function(gwas_table,
+                               rank,
+                               nuc_range = 50000,
+                               snpmatrix_path = NULL,
+                               ld_stats = c("D.prime") ,
+                               use_phenotype_table = NULL,
+                               acc_col = "ACC_ID",
+                               linkage_cutoff = 0.8,
+                               LD_legend = FALSE,
+                               data_only = FALSE) {
+
+  if(length(ld_stats) != 1) {
+    stop("The number of LD stats must be exactly one.")
+  }
+
+  # Calculate anchored LD
+
+  anc_ld <- snp_linkage_snpmatrix(gwas_table = gwas_table,
+                        rank = rank,
+                        nuc_range = nuc_range,
+                        snpmatrix_path = snpmatrix_path,
+                        anchored = TRUE,
+                        use_phenotype_table = use_phenotype_table,
+                        acc_col = acc_col,
+                        ld_stats = ld_stats
+                        )
 
   # Check if this actually produced results
 
