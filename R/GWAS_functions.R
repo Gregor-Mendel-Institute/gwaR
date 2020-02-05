@@ -647,11 +647,14 @@ snp_linkage <- function(gwas_table,
 
   gwas_table <- gwas_table %>%
     dplyr::arrange(dplyr::desc(log10_p))
+
   # Step 1: Download variant table
   ## Define region for API call
+
   region_lower <- gwas_table %>%
     dplyr::slice(rank) %>%
     {.$pos - (nuc_range / 2)}
+
   region_upper <- gwas_table %>%
     dplyr::slice(rank) %>%
     {.$pos + (nuc_range / 2)}
@@ -869,14 +872,19 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
   gwas_table <- gwas_table %>%
     dplyr::arrange(dplyr::desc(log10_p))
+
   # Step 1: Download variant table
+
   ## Define region for API call
+
   region_lower <- gwas_table %>%
     dplyr::slice(rank) %>%
     {.$pos - (nuc_range / 2)}
+
   region_upper <- gwas_table %>%
     dplyr::slice(rank) %>%
     {.$pos + (nuc_range / 2)}
+
   chrom <- gwas_table %>%
     dplyr::slice(rank) %>%
     dplyr::select(chrom) %>%
@@ -886,8 +894,6 @@ snp_linkage_snpmatrix <- function(gwas_table,
     region_lower <- 1
     message("Nucleotide range out of bounds (negative start). Set start to 1.")
   }
-
-
 
   ## Define genotypes for subsetting
   if(is.null(use_phenotype_table)){
@@ -1001,10 +1007,13 @@ plot_anchored_ld <-   function(gwas_table,
     .$chrom
 
   start_pos = gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+    dplyr::slice(rank) %>%
+    {.$pos - as.numeric(nuc_range) / 2}
+
   if(start_pos < 1) {
     start_pos <- 1 # No message, because snp_linkage will issue a message.
   }
+
   end_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
 
