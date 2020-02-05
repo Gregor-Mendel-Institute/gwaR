@@ -646,9 +646,10 @@ snp_linkage <- function(gwas_table,
 
   # Step 1: Download variant table
   ## Define region for API call
+    region_lower <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p))
+    dplyr::slice(rank) %>% {.$pos - (nuc_range / 2)}
 
-  region_lower <- gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
   if(region_lower < 1) {
     region_lower <- 1
     message("Nucleotide range out of bounds (negative start). Set start to 1.")
