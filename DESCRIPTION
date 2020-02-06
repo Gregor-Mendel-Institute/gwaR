@@ -15,7 +15,6 @@ Encoding: UTF-8
 LazyData: true
 biocViews:
 Imports:
-    methods,
     data.table,
     ggplot2,
     ggthemes,
@@ -24,6 +23,7 @@ Imports:
     leaflet,
     magrittr,
     ggbeeswarm,
+    methods,
     plyranges,
     httr,
     stringr,

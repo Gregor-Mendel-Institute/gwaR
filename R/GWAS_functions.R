@@ -1228,8 +1228,9 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
   ## Transforming LD table into more plotable table.
 
   plot_data <- anc_ld %>%
+    t() %>%
     dplyr::as_tibble() %>%
-    tidyr::pivot_longer(tidyselect::matches("_")) %>%
+    tibble::rownames_to_column("name") %>%
     na.omit %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., snp_impacts, by = c("pos")) %>%
