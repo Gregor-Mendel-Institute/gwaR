@@ -24,7 +24,6 @@ Imports:
     leaflet,
     magrittr,
     ggbeeswarm,
-    methods,
     plyranges,
     httr,
     stringr,

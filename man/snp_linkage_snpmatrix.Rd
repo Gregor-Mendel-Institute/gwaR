@@ -9,7 +9,7 @@ snp_linkage_snpmatrix(
   rank,
   snpmatrix_path = NULL,
   nuc_range = 50000,
-  ld_depth = "1000",
+  ld_depth = 1000,
   ld_stats = "D.prime",
   ld_symmetric = FALSE,
   use_phenotype_table = NULL,

@@ -637,7 +637,7 @@ plot_annotated_gwas <- function(gwas_table,
 snp_linkage <- function(gwas_table,
                         rank,
                         nuc_range = 50000,
-                        ld_depth = "1000",
+                        ld_depth = 1000,
                         ld_stats = "D.prime",
                         ld_symmetric = FALSE,
                         use_phenotype_table = NULL,
@@ -859,7 +859,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
                         rank,
                         snpmatrix_path = NULL,
                         nuc_range = 50000,
-                        ld_depth = "1000",
+                        ld_depth = 1000,
                         ld_stats = "D.prime",
                         ld_symmetric = FALSE,
                         use_phenotype_table = NULL,
@@ -939,7 +939,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       dplyr::slice(rank) %>%
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
-    anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == pos), paste(c(genotypes, "chrom", "pos"))]
+    anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos), paste(c(genotypes, "chrom", "pos"))]
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
     anchor_tmpmatrix <- anchor_tmpmatrix[, paste(genotypes)]
     anchor_tmpmatrix <- anchor_tmpmatrix %>%

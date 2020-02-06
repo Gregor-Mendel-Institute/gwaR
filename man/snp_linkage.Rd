@@ -8,7 +8,7 @@ snp_linkage(
   gwas_table,
   rank,
   nuc_range = 50000,
-  ld_depth = "1000",
+  ld_depth = 1000,
   ld_stats = "D.prime",
   ld_symmetric = FALSE,
   use_phenotype_table = NULL,
