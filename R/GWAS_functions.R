@@ -1194,12 +1194,12 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
   ## Define genotypes
 
   if(is.null(use_phenotype_table)){
-    message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
+    message("Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.")
     genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
   }
 
   if(!is.null(use_phenotype_table)){
-    message("Calculating LD based on all strains in phenotype table,")
+    message("Retrieving SNP impacts for strains in Phenotype table.")
     genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
     ## construct call
   }
@@ -1229,7 +1229,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   plot_data <- anc_ld %>%
     dplyr::as_tibble() %>%
-    tidyr::pivot_longer(tidyselect::matches(":")) %>%
+    tidyr::pivot_longer(tidyselect::matches("_")) %>%
     na.omit %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., snp_impacts, by = c("pos")) %>%
