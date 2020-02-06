@@ -927,7 +927,6 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
   ## Change storage mode so coercion works
 
-
   SM_for_linkage <- methods::new("SnpMatrix", tmpmatrix)
 
   # Step 4 calculate ld on genotypes table of SM; return
@@ -948,7 +947,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
 
-    anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos) & (anchor_tmpmatrix$mac > 0), paste(c(genotypes, "chrom", "pos"))]
+    anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos), paste(c(genotypes, "chrom", "pos"))]
 
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
 
@@ -957,6 +956,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
       as.matrix() %>%
       t()
+
     ## Recode matrix. see above
     storage.mode(anchor_tmpmatrix) <- "double"
     anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 3
@@ -964,7 +964,9 @@ snp_linkage_snpmatrix <- function(gwas_table,
 
     anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
 
-    ld_tab <- snpStats::ld(x = anchor_SM , y = SM_for_linkage, stats = ld_stats)
+    ld_tab <- snpStats::ld(x = anchor_SM,
+                           y = SM_for_linkage,
+                           stats = ld_stats)
   }
   return(ld_tab)
 }
