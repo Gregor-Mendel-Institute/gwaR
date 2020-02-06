@@ -918,6 +918,12 @@ snp_linkage_snpmatrix <- function(gwas_table,
   tmpmatrix <- tmpmatrix %>%
     as.matrix() %>%
     t()
+
+  ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
+  tmpmatrix[tmpmatrix == 1] <- 2
+  tmpmatrix[tmpmatrix == 0] <- 1
+
+  ## Change storage mode so coercion works
   storage.mode(tmpmatrix) <- "raw"
 
   SM_for_linkage <- methods::new("SnpMatrix", tmpmatrix)
@@ -939,13 +945,21 @@ snp_linkage_snpmatrix <- function(gwas_table,
       dplyr::slice(rank) %>%
       .$pos
     anchor_tmpmatrix <- fst::fst(snpmatrix_path)
+
     anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos), paste(c(genotypes, "chrom", "pos"))]
+
     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
+
     anchor_tmpmatrix <- anchor_tmpmatrix[, paste(genotypes)]
+
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
       as.matrix() %>%
       t()
+    ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
+    anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 2
+    anchor_tmpmatrix[anchor_tmpmatrix == 0] <- 1
 
+    ## Change storage mode so coercion works
     storage.mode(anchor_tmpmatrix) <- "raw"
 
     anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
