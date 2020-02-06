@@ -920,11 +920,13 @@ snp_linkage_snpmatrix <- function(gwas_table,
     t()
 
   ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
-  tmpmatrix[tmpmatrix == 1] <- 22
-  tmpmatrix[tmpmatrix == 0] <- 11
+  ## Contrary to what the documentation seems to say, in a numeric matrix 0 is missing, 1 is allele 1, 2 is hetero, 3 is allele 2.
+  storage.mode(tmpmatrix) <- "double"
+  tmpmatrix[tmpmatrix == 1] <- 3
+  tmpmatrix[tmpmatrix == 0] <- 1
 
   ## Change storage mode so coercion works
-  storage.mode(tmpmatrix) <- "raw"
+
 
   SM_for_linkage <- methods::new("SnpMatrix", tmpmatrix)
 
@@ -955,12 +957,10 @@ snp_linkage_snpmatrix <- function(gwas_table,
     anchor_tmpmatrix <- anchor_tmpmatrix %>%
       as.matrix() %>%
       t()
-    ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
-    anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 22
-    anchor_tmpmatrix[anchor_tmpmatrix == 0] <- 11
-
-    ## Change storage mode so coercion works
-    storage.mode(anchor_tmpmatrix) <- "raw"
+    ## Recode matrix. see above
+    storage.mode(anchor_tmpmatrix) <- "double"
+    anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 3
+    anchor_tmpmatrix[anchor_tmpmatrix == 0] <- 1
 
     anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
 
