@@ -1231,7 +1231,6 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   plot_data <- anc_ld %>%
     t() %>%
-    t() %>%
     as.data.frame() %>%
     magrittr::set_colnames("value") %>%
     tibble::rownames_to_column("name")  %>%
