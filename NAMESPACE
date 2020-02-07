@@ -30,4 +30,5 @@ export(read_gwas,
        snp_linkage,
        snp_linkage_snpmatrix,
        plot_anchored_ld,
-       plot_anchored_ld_snpmatrix )
+       plot_anchored_ld_snpmatrix,
+       polymorph_impact)

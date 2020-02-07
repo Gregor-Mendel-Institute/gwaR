@@ -1178,7 +1178,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   # Retrieve snp impacts
 
-  impacts <- polymorph_impact_snpmatrix(gwas_table = gwas_table,
+  impacts <- polymorph_impact(gwas_table = gwas_table,
                                         rank = rank,
                                         nuc_range = nuc_range,
                                         snpmatrix_path = snpmatrix_path)
@@ -1378,45 +1378,62 @@ plot_intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_
 #' @seealso \code{\link{read_gwas}}
 #' @seealso \code{\link{intersect_phenotype_snp}}
 
-polymorph_impact_snpmatrix <- function(gwas_table, rank, nuc_range, snpmatrix_path, use_phenotype_table = NULL, acc_col){
+polymorph_impact <- function(gwas_table, rank, nuc_range, snpmatrix_path, use_phenotype_table = NULL, acc_col){
 
-snp_pos <- gwas_table %>%
-  dplyr::slice(rank) %>% .$pos
+  gwas_table <- gwas_table %>% dplyr::arrange(dplyr::desc(log10_p))
 
-chrom = gwas_table %>%
-  dplyr::slice(rank) %>%
-  .$chrom
+  snp_pos <- gwas_table %>%
+    dplyr::slice(rank) %>% .$pos
 
-start_pos = gwas_table %>%
-  dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+  chrom = gwas_table %>%
+    dplyr::slice(rank) %>%
+    .$chrom
 
-if(start_pos < 1) {
-  start_pos <- 1 # No message, because snp_linkage will issue a message.
-}
-end_pos = gwas_table %>%
-  dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
+  start_pos = gwas_table %>%
+    dplyr::slice(rank) %>% {
+      .$pos - as.numeric(nuc_range) / 2
+    }
 
-## Define genotypes
+  if (start_pos < 1) {
+    start_pos <-
+      1 # No message, because snp_linkage will issue a message.
+  }
+  end_pos = gwas_table %>%
+    dplyr::slice(rank) %>% {
+      .$pos + as.numeric(nuc_range) / 2
+    }
 
-if(is.null(use_phenotype_table)){
-  message("Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.")
-  genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
-}
+  ## Define genotypes
 
-if(!is.null(use_phenotype_table)){
-  message("Retrieving SNP impacts for strains in Phenotype table.")
-  genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
-}
+  if (is.null(use_phenotype_table)) {
+    message("Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.")
+    genotypes <-
+      colnames(fst::fst(snpmatrix_path)) %>% {
+        suppressWarnings(as.numeric(.))
+      } %>% na.omit() %>% stringr::str_flatten(., ",")
+  }
 
-## Retrieve SNPimpacts from polymorph DB
-snp_impacts <- httr::content(
-  httr::GET(
+  if (!is.null(use_phenotype_table)) {
+    message("Retrieving SNP impacts for strains in Phenotype table.")
+    genotypes <-
+      stringr::str_flatten(levels(as.factor(unlist(
+        use_phenotype_table[, eval(acc_col)]
+      ))), collapse = ",")
+  }
+
+  ## Retrieve SNPimpacts from polymorph DB
+  snp_impacts <- httr::content(httr::GET(
     paste0(
-      "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
-      ";chr=", chrom,
-      ";start=", start_pos,
-      ";end=", end_pos,
-      ";type=snps")
+      "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=",
+      genotypes,
+      ";chr=",
+      chrom,
+      ";start=",
+      start_pos,
+      ";end=",
+      end_pos,
+      ";type=snps"
+    )
   ), col_types = "iifccccccccccc")
-return(snp_impacts)
+  return(snp_impacts)
 }
