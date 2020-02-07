@@ -1186,9 +1186,33 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     return(impacts)
   }
   ## Labels for the gene plots
+  gwas_table <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p))
+  snp_pos <- gwas_table %>%
+    dplyr::slice(rank) %>%
+    .$pos
+
+  chrom = gwas_table %>%
+    dplyr::slice(rank) %>%
+    .$chrom
+
+  start_pos = gwas_table %>%
+    dplyr::slice(rank) %>%
+    {  .$pos - as.numeric(nuc_range) / 2  }
+
+  if (start_pos < 1) {
+    start_pos <-
+      1 # No message, because snp_linkage will issue a message.
+  }
+
+  end_pos = gwas_table %>%
+    dplyr::slice(rank) %>%
+    {  .$pos + as.numeric(nuc_range) / 2  }
 
   gene_labels <- araGenome %>%
-    dplyr::filter(chromosome_name == chrom, start_position %in% c(start_pos:end_pos), end_position %in% c(start_pos:end_pos)) %>%
+    dplyr::filter(chromosome_name == chrom,
+                  start_position %in% c(start_pos:end_pos),
+                  end_position %in% c(start_pos:end_pos)) %>%
     dplyr::mutate(gene = ensembl_gene_id,
                   molecule = 0,
                   start = start_position,
@@ -1380,7 +1404,8 @@ plot_intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_
 
 polymorph_impact <- function(gwas_table, rank, nuc_range, snpmatrix_path, use_phenotype_table = NULL, acc_col){
 
-  gwas_table <- gwas_table %>% dplyr::arrange(dplyr::desc(log10_p))
+  gwas_table <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p))
 
   snp_pos <- gwas_table %>%
     dplyr::slice(rank) %>% .$pos
