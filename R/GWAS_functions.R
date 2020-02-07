@@ -1174,7 +1174,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     stop("LD calculation returned only NAs.")
   }
 
-  # Define SNP details.
+  # Define SNP details for impact lookup
 
   snp_pos <- gwas_table %>%
     dplyr::slice(rank) %>% .$pos
@@ -1185,6 +1185,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   start_pos = gwas_table %>%
     dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+
   if(start_pos < 1) {
     start_pos <- 1 # No message, because snp_linkage will issue a message.
   }
@@ -1201,9 +1202,9 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
   if(!is.null(use_phenotype_table)){
     message("Retrieving SNP impacts for strains in Phenotype table.")
     genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
-    ## construct call
   }
-  ## construct call (this directly reads the csv from 1001genomes)
+
+  ## Retrieve SNPimpacts from polymorph DB
   snp_impacts <- httr::content(
     httr::GET(
       paste0(
@@ -1213,6 +1214,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
         ";end=", end_pos,
         ";type=snps")
     ), col_types = "iifccccccccccc")
+
   ## Labels for the gene plots
 
   gene_labels <- araGenome %>%
@@ -1229,9 +1231,10 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   plot_data <- anc_ld %>%
     t() %>%
-    dplyr::as_tibble() %>%
-    tibble::rownames_to_column("name") %>%
-    na.omit %>%
+    t() %>%
+    as.data.frame() %>%
+    magrittr::set_colnames("value") %>%
+    tibble::rownames_to_column("name")  %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., snp_impacts, by = c("pos")) %>%
     dplyr::mutate(layer_var = effect_impact)
