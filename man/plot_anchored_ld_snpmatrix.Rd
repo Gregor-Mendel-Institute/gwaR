@@ -14,7 +14,8 @@ plot_anchored_ld_snpmatrix(
   acc_col = "ACC_ID",
   linkage_cutoff = 0.8,
   LD_legend = FALSE,
-  data_only = FALSE
+  data_only = FALSE,
+  return_impacts = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ plot_anchored_ld_snpmatrix(
 \item{LD_legend}{Toggle color legend for LD. Off by default.}
 
 \item{data_only}{If true does not plot, only returns the data used for plotting.}
+
+\item{return_impacts}{If true, returns the table of SNP impacts.}
 }
 \description{
 Produce a plot of linked SNPs based on a SNPMatrix

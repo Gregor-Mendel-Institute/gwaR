@@ -1140,6 +1140,7 @@ plot_anchored_ld <-   function(gwas_table,
 #' @param linkage_cutoff Only SNPs that have an LD values >= this will be plotted (default 0.8)
 #' @param LD_legend Toggle color legend for LD. Off by default.
 #' @param data_only If true does not plot, only returns the data used for plotting.
+#' @param return_impacts If true, returns the table of SNP impacts.
 
 plot_anchored_ld_snpmatrix <-   function(gwas_table,
                                rank,
@@ -1150,7 +1151,8 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
                                acc_col = "ACC_ID",
                                linkage_cutoff = 0.8,
                                LD_legend = FALSE,
-                               data_only = FALSE) {
+                               data_only = FALSE,
+                               return_impacts = FALSE) {
 
   if(length(ld_stats) != 1) {
     stop("The number of LD stats must be exactly one.")
@@ -1174,47 +1176,15 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     stop("LD calculation returned only NAs.")
   }
 
-  # Define SNP details for impact lookup
+  # Retrieve snp impacts
 
-  snp_pos <- gwas_table %>%
-    dplyr::slice(rank) %>% .$pos
-
-  chrom = gwas_table %>%
-    dplyr::slice(rank) %>%
-    .$chrom
-
-  start_pos = gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
-
-  if(start_pos < 1) {
-    start_pos <- 1 # No message, because snp_linkage will issue a message.
+  impacts <- polymorph_impact_snpmatrix(gwas_table = gwas_table,
+                                        rank = rank,
+                                        nuc_range = nuc_range,
+                                        snpmatrix_path = snpmatrix_path)
+  if(return_impacts){
+    return(impacts)
   }
-  end_pos = gwas_table %>%
-    dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
-
-  ## Define genotypes
-
-  if(is.null(use_phenotype_table)){
-    message("Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.")
-    genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
-  }
-
-  if(!is.null(use_phenotype_table)){
-    message("Retrieving SNP impacts for strains in Phenotype table.")
-    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
-  }
-
-  ## Retrieve SNPimpacts from polymorph DB
-  snp_impacts <- httr::content(
-    httr::GET(
-      paste0(
-        "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
-        ";chr=", chrom,
-        ";start=", start_pos,
-        ";end=", end_pos,
-        ";type=snps")
-    ), col_types = "iifccccccccccc")
-
   ## Labels for the gene plots
 
   gene_labels <- araGenome %>%
@@ -1235,7 +1205,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     magrittr::set_colnames("value") %>%
     tibble::rownames_to_column("name")  %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
-    dplyr::left_join(., snp_impacts, by = c("pos")) %>%
+    dplyr::left_join(., impacts, by = c("pos")) %>%
     dplyr::mutate(layer_var = effect_impact)
 
   ## Build Plot
@@ -1393,4 +1363,60 @@ plot_intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_
   }
 
   return(p)
+}
+
+
+#' Retrieve impacts of SNPs within a certain range around a GWAS peak. Uses snpmatrix for genotype lookup
+#' @details Based on a Phenotype table, the name of the phenotype and a GWAS table and a rank, produces a boxplot of that phenotype, grouped by presence of that SNP.
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param rank The (-log10(p)) rank of the SNP of interest
+#' @param nuc_range Window around the SNP of interest to retrieve information for.
+#' @param snpmatrix_path The path to the snpmatrix to use for identifying accessions that carry the relevant SNP.
+#' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.
+#' @param acc_col the column that contains accession identifiers.
+#' @seealso \code{\link{get_phenotype}}
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{intersect_phenotype_snp}}
+
+polymorph_impact_snpmatrix <- function(gwas_table, rank, nuc_range, snpmatrix_path, use_phenotype_table = NULL, acc_col){
+
+snp_pos <- gwas_table %>%
+  dplyr::slice(rank) %>% .$pos
+
+chrom = gwas_table %>%
+  dplyr::slice(rank) %>%
+  .$chrom
+
+start_pos = gwas_table %>%
+  dplyr::slice(rank) %>% {.$pos - as.numeric(nuc_range) / 2}
+
+if(start_pos < 1) {
+  start_pos <- 1 # No message, because snp_linkage will issue a message.
+}
+end_pos = gwas_table %>%
+  dplyr::slice(rank) %>% {.$pos + as.numeric(nuc_range) / 2}
+
+## Define genotypes
+
+if(is.null(use_phenotype_table)){
+  message("Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.")
+  genotypes <- colnames(fst::fst(snpmatrix_path)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit() %>% stringr::str_flatten(.,",")
+}
+
+if(!is.null(use_phenotype_table)){
+  message("Retrieving SNP impacts for strains in Phenotype table.")
+  genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+}
+
+## Retrieve SNPimpacts from polymorph DB
+snp_impacts <- httr::content(
+  httr::GET(
+    paste0(
+      "http://tools.1001genomes.org/api/v1.1/effects.csv?accs=", genotypes,
+      ";chr=", chrom,
+      ";start=", start_pos,
+      ";end=", end_pos,
+      ";type=snps")
+  ), col_types = "iifccccccccccc")
+return(snp_impacts)
 }
