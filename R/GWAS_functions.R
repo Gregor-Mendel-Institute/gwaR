@@ -1326,11 +1326,11 @@ get_SNPmatrix_acc <- function(gwas_table, SNPrank, SNPmatrix){
 intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_table, SNPrank, acc_col = "ACC_ID", specific = NULL, SNPmatrix) {
   if(!is.null(specific)){
     get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
-      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID ~ TRUE,
                                               TRUE ~ FALSE))
   } else {
     get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
-      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+      dplyr::mutate(hasSNP = dplyr::case_when(ACC_ID %in% get_SNPmatrix_acc(gwas_table, SNPrank , SNPmatrix = SNPmatrix)$ACC_ID ~ TRUE,
                                               TRUE ~ FALSE))
   }
 }
@@ -1360,7 +1360,8 @@ plot_intersect_phenotype_snpmatrix <- function(phenotype_table, phenotype, gwas_
                                         phenotype = phenotype,
                                         gwas_table = gwas_table,
                                         SNPrank = SNPrank,
-                                        specific = specific) %>%
+                                        specific = specific,
+                                        SNPmatrix = SNPmatrix) %>%
       ggplot(aes(x = hasSNP, y = phenotype_value)) +
       geom_boxplot(aes(fill = hasSNP)) +
       stat_summary(color = "purple") +
