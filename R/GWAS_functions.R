@@ -1230,11 +1230,12 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     tibble::rownames_to_column("name")  %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., impacts, by = c("pos")) %>%
-    dplyr::mutate(layer_var = effect_impact)
+    dplyr::mutate(layer_var = effect_impact) %>%
+    dplyr::filter(value >= linkage_cutoff)
 
   ## Build Plot
 
-  p <- ggplot(data = plot_data %>% dplyr::filter(value > linkage_cutoff)) +
+  p <- ggplot(data = plot_data) +
     # Tile Geom for LD values
     geom_tile(aes(x = pos , color = value, y = 0, height = 2),
               data = plot_data %>% dplyr::mutate(layer_var = "LD") %>% dplyr::filter(layer_var == "LD")) +
