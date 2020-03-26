@@ -1234,7 +1234,7 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
 
   ## Build Plot
 
-  p <- ggplot(data = plot_data) +
+  p <- ggplot(data = plot_data %>% dplyr::filter(value > linkage_cutoff)) +
     # Tile Geom for LD values
     geom_tile(aes(x = pos , color = value, y = 0, height = 2),
               data = plot_data %>% dplyr::mutate(layer_var = "LD") %>% dplyr::filter(layer_var == "LD")) +
