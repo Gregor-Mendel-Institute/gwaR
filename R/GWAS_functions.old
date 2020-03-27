@@ -171,6 +171,32 @@ get_polymorph_acc <- function(gwas_table, SNPrank){
   )
 }
 
+#' Obtain accession ids that carry a SNP of interest from a local SNPmatrix. This is a sister of get_polymorph_acc
+#' @param gwas_table Object returned from \code{\link{read_gwas}} function
+#' @param SNPrank The (-log10(p)) rank of the SNP of interest
+#' @param SNPmatrix The SNPmatrix to use for identifying accessions that carry the relevant SNP.
+#' @seealso \code{\link{read_gwas}}
+#' @seealso \code{\link{get_polymorph_acc}}
+
+get_SNPmatrix_acc <- function(gwas_table, SNPrank, SNPmatrix){
+  if(is.null(SNPmatrix)) {
+    stop("No SNPmatrix specified")
+  }
+  dats <- gwas_table %>%
+    dplyr::arrange(dplyr::desc(log10_p)) %>%
+    dplyr::slice(SNPrank) %>%
+    dplyr::select(chrom, pos)
+
+  return(SNPmatrix %>%
+           dplyr::filter(chrom ==  dats$chrom, pos == dats$pos) %>%
+           dplyr::select(-chrom, -pos) %>%
+           t %>%
+           magrittr::set_colnames("SNP") %>%
+           as.data.frame() %>%
+           tibble::rownames_to_column("ACC_ID") %>%
+           dplyr::filter(SNP == 1) )
+}
+
 #' Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields
 #' @param gwas_table Object returned from \code{\link{read_gwas}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
@@ -622,7 +648,9 @@ plot_annotated_gwas <- function(gwas_table,
 # Niklas Schandry
 
 #' Calculate linkage around SNP of interest.
-#' @details Details are fuzzy right now
+#' @details This function calculates LD in a specific region. The SNPs per accession in the region are retrieved from polymorph.
+#' @details Sometimes, the ld function produces no result, especially when used with anchored = T.
+#' @details anchored analysis will use one SNP can compute LD of that SNP against a region.
 #' @param gwas_table Object returned from \code{\link{read_gwas}} function
 #' @param rank Rank of the SNP of interest
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
@@ -638,7 +666,7 @@ snp_linkage <- function(gwas_table,
                         rank,
                         nuc_range = 50000,
                         ld_depth = 1000,
-                        ld_stats = "D.prime",
+                        ld_stats = "R.squared",
                         ld_symmetric = FALSE,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
@@ -831,7 +859,7 @@ snp_linkage <- function(gwas_table,
 
     anchor_vcf <- VariantAnnotation::readVcf(anchor_tmp)
 
-    #anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
+    anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
 
     anchor_SM <- VariantAnnotation::genotypeToSnpMatrix(anchor_vcf)
 
@@ -849,7 +877,7 @@ snp_linkage <- function(gwas_table,
 #' @param snpmatrix_path the path to the SNPmatrix in fst format.
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
 #' @param ld_depth Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)
-#' @param ld_stats The LD statistics, see SNPStats::ld. Default is D.prime
+#' @param ld_stats The LD statistics, see SNPStats::ld. Default is R.squared
 #' @param ld_symmetric Should a symmetric matrix be returned? see SNPStats::ld
 #' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions in the SNPmatrix are used. Accessions are assumed to be named as numbers.
 #' @param acc_col the column name of the accession column in the phenotype table
@@ -860,7 +888,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
                         snpmatrix_path = NULL,
                         nuc_range = 50000,
                         ld_depth = 1000,
-                        ld_stats = "D.prime",
+                        ld_stats = "R.squared",
                         ld_symmetric = FALSE,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
@@ -988,7 +1016,7 @@ snp_linkage_snpmatrix <- function(gwas_table,
 plot_anchored_ld <-   function(gwas_table,
                                rank,
                                nuc_range = 50000,
-                               ld_stats = c("D.prime") ,
+                               ld_stats = c("R.squared") ,
                                use_phenotype_table = NULL,
                                use_all_acc = FALSE,
                                acc_col = "ACC_ID",
@@ -1010,9 +1038,9 @@ plot_anchored_ld <-   function(gwas_table,
 
   # Check if this actually produced results
 
-  if(anc_ld %>% na.omit() %>% nrow() == 0) {
-    stop("LD calculation returned only NAs.")
-  }
+   if(nrow(na.omit(anc_ld)) == 0) {
+     stop("LD calculation returned only NAs.")
+   }
 
   # Define SNP details.
 
@@ -1071,7 +1099,7 @@ plot_anchored_ld <-   function(gwas_table,
   plot_data <- anc_ld %>%
     dplyr::as_tibble() %>%
     tidyr::pivot_longer(tidyselect::matches(":")) %>%
-    na.omit %>%
+    na.omit() %>%
     dplyr::mutate(pos = as.numeric(stringr::str_split_fixed(name, "[:|_]",3)[,2])) %>%
     dplyr::left_join(., snp_impacts, by = c("pos")) %>%
     dplyr::mutate(layer_var = effect_impact)
@@ -1142,11 +1170,11 @@ plot_anchored_ld <-   function(gwas_table,
 #' @param data_only If true does not plot, only returns the data used for plotting.
 #' @param return_impacts If true, returns the table of SNP impacts.
 
-plot_anchored_ld_snpmatrix <-   function(gwas_table,
+plot_anchored_ld_snpmatrix <- function(gwas_table,
                                rank,
                                nuc_range = 50000,
                                snpmatrix_path = NULL,
-                               ld_stats = c("D.prime") ,
+                               ld_stats = c("R.squared") ,
                                use_phenotype_table = NULL,
                                acc_col = "ACC_ID",
                                linkage_cutoff = 0.8,
@@ -1224,7 +1252,6 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
   ## Transforming LD table into more plotable table.
 
   plot_data <- anc_ld %>%
-    t() %>%
     as.data.frame() %>%
     magrittr::set_colnames("value") %>%
     tibble::rownames_to_column("name")  %>%
@@ -1282,32 +1309,6 @@ plot_anchored_ld_snpmatrix <-   function(gwas_table,
     return(p)
   }
 
-}
-
-#' Obtain accession ids that carry a SNP of interest from a local SNPmatrix. This is a sister of get_polymorph_acc
-#' @param gwas_table Object returned from \code{\link{read_gwas}} function
-#' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @param SNPmatrix The SNPmatrix to use for identifying accessions that carry the relevant SNP.
-#' @seealso \code{\link{read_gwas}}
-#' @seealso \code{\link{get_polymorph_acc}}
-
-get_SNPmatrix_acc <- function(gwas_table, SNPrank, SNPmatrix){
-  if(is.null(SNPmatrix)) {
-    stop("No SNPmatrix specified")
-  }
-  dats <- gwas_table %>%
-    dplyr::arrange(dplyr::desc(log10_p)) %>%
-    dplyr::slice(SNPrank) %>%
-    dplyr::select(chrom, pos)
-
-  return(SNPmatrix %>%
-           dplyr::filter(chrom ==  dats$chrom, pos == dats$pos) %>%
-           dplyr::select(-chrom, -pos) %>%
-           t %>%
-           magrittr::set_colnames("SNP") %>%
-           as.data.frame() %>%
-           tibble::rownames_to_column("ACC_ID") %>%
-           dplyr::filter(SNP == 1) )
 }
 
 #' Get intersection between phenotype, and local SNPmatrix SNP calls.

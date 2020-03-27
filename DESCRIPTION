@@ -1,13 +1,13 @@
 Package: gwaR
 Type: Package
 Title: A collection of R functions to conduct GWAS analysis (in Arabidopsis thaliana) 
-Version: 0.3.5
+Version: 0.5
 Authors@R: c(
   person("Niklas", "Schandry", email = "niklas.schandry@gmi.oeaw.ac.at", role = c("aut","cre")),
   person("Patrick", "Hüther", email = "patrick.huether@gmi.oeaw.ac.at", role = c("aut"))
   )
 Description: The 'gwaR' package is a collection of convenience functions to plot, inspect and analyse GWAS
-    results typically obtained from limix. It uses REST APIs from <http://tools.1001genomes.org/api/index.html>
+    results typically obtained from limix. It uses local SNPmatrices or the REST APIs from <http://tools.1001genomes.org/api/index.html>
     to obtain annotations for SNPs and genes as well as gene expression data and is currently only useful for
     Arabidopsis thaliana.
 License: MIT + file LICENSE
@@ -38,5 +38,6 @@ Imports:
     gggenes,
     tidyselect,
     fst,
-    forcats
+    forcats,
+    InterMineR
 RoxygenNote: 7.0.2
