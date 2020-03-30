@@ -312,9 +312,10 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
     SNPmat <- fst::fst(SNPmatrix)
     SNPmat <- SNPmat[(SNPmat$chrom == dats$chrom) & (SNPmat$pos = dats$pos),]
     acc_table <- SNPmat %>%
-      dplyr::as_tibble() %>%
+      dplyr::as_data_frame() %>%
       dplyr::select(-chrom,-pos) %>%
-      t %>%
+      t
+    acc_table <- acc_table %>%
       magrittr::set_colnames("SNP") %>%
       as.data.frame() %>%
       tibble::rownames_to_column("ACC_ID") %>%
