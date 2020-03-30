@@ -294,11 +294,11 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
   if(is.null(SNPmatrix)){
     message("No SNPmatrix provided, retrieving information from 1001genomes.org")
     acc_table <- httr::content(httr::GET(paste0("http://tools.1001genomes.org/api/v1.1/variants.csv?type=snps;accs=all;chr=",
-                               dats$chrom,
-                               ";pos=",
-                               dats$pos)), col_types = "iicccccc") %>%
-                 dplyr::mutate(ACC_ID = strain) %>%
-                 dplyr::select(ACC_ID)
+                                                dats$chrom,
+                                                ";pos=",
+                                                dats$pos)), col_types = "iicccccc") %>%
+      dplyr::mutate(ACC_ID = strain) %>%
+      dplyr::select(ACC_ID)
   } else{
 
     # Check SNPmatrix
@@ -309,18 +309,17 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
 
     #Subsetting
 
-    SNPmatrix <- fst::fst(SNPmatrix)
-    SNPmatrix <- SNPmatrix[(SNPmatrix$chrom == dats$chrom) & (SNPmatrix$pos = dats$pos),]
-    head(SNPmatrix)
-    acc_table <- SNPmatrix %>%
-             dplyr::as_tibble()
-             dplyr::select(-contains("chrom"), -contains("pos")) %>%
-             t %>%
-             magrittr::set_colnames("SNP") %>%
-             as.data.frame() %>%
-             tibble::rownames_to_column("ACC_ID") %>%
-             dplyr::filter(SNP == 1) %>%
-             dplyr::select(-"SNP")
+    SNPmat <- fst::fst(SNPmatrix)
+    SNPmat <- SNPmat[(SNPmat$chrom == dats$chrom) & (SNPmat$pos = dats$pos),]
+    acc_table <- SNPmat %>%
+      dplyr::as_tibble() %>%
+      dplyr::select(-chrom,-pos) %>%
+      t %>%
+      magrittr::set_colnames("SNP") %>%
+      as.data.frame() %>%
+      tibble::rownames_to_column("ACC_ID") %>%
+      dplyr::filter(SNP == 1) %>%
+      dplyr::select(-"SNP")
   }
 
   return(acc_table)
