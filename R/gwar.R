@@ -379,17 +379,17 @@ phenotype_by_snp <- function(phenotype_table,
                              specific = NULL,
                              plot = FALSE ,
                              nobees = FALSE,
-                                    ...) {
+                             ...) {
 
   #Join phenotypes and snp information
 
   if(!is.null(specific)){
    result <- get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col, specific = specific) %>%
-      dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+      dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID ~ TRUE,
                                               TRUE ~ FALSE))
   } else {
   result <-  get_phenotype(phenotype_table = phenotype_table, phenotype = phenotype, acc_col = acc_col) %>%
-      dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+      dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID ~ TRUE,
                                               TRUE ~ FALSE))
   }
 
@@ -414,7 +414,7 @@ phenotype_by_snp <- function(phenotype_table,
     }
     # Plot
     p <- result %>%
-      ggplot(aes(x = hasSNP, y = phenotype_value)) +
+      ggplot(aes(x = SNP, y = phenotype_value)) +
       geom_boxplot(aes(fill = SNP)) +
       overplot_geom +
       labs(title = paste0("Phenotype values by SNP presence"),
