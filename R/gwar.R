@@ -310,9 +310,9 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
     #Subsetting
 
     SNPmat <- fst::fst(SNPmatrix)
-    SNPmat <- SNPmat[(SNPmat$chrom == dats$chrom) & (SNPmat$pos = dats$pos),]
+    SNPmat <- SNPmat[(SNPmat$chrom == dats$chrom) & (SNPmat$pos == dats$pos),]
     acc_table <- SNPmat %>%
-      dplyr::as_data_frame() %>%
+      dplyr::as_tibble() %>%
       dplyr::select(-chrom,-pos) %>%
       t
     acc_table <- acc_table %>%
