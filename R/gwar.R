@@ -314,13 +314,13 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
 
     acc_table <- SNPmatrix %>%
              dplyr::as_tibble()
-             dplyr::select(-chrom, -pos) %>%
+             dplyr::select(-"chrom", -"pos") %>%
              t %>%
              magrittr::set_colnames("SNP") %>%
              as.data.frame() %>%
              tibble::rownames_to_column("ACC_ID") %>%
              dplyr::filter(SNP == 1) %>%
-             dplyr::select(-SNP)
+             dplyr::select(-"SNP")
   }
 
   return(acc_table)
@@ -344,11 +344,11 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specif
   }
   if(is.null(specific)){
     phenotype_table %>%
-      dplyr::select(ACC_ID, eval(phenotype)) %>%
+      dplyr::select("ACC_ID", eval(phenotype)) %>%
       tidyr::pivot_longer(tidyselect::matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
   } else {
     phenotype_table %>%
-      dplyr::select(ACC_ID, eval(phenotype), eval(specific)) %>%
+      dplyr::select("ACC_ID", eval(phenotype), eval(specific)) %>%
       tidyr::pivot_longer(tidyselect::matches(eval(phenotype)), names_to = "Phenotype", values_to = "phenotype_value")
   }
 
