@@ -303,7 +303,7 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
 
     # Check SNPmatrix
 
-    if(!file.exists(paste(SNPmatrix)) | !(tools::file_ext(paste(SNPmatrix)) == "fst" )) {
+    if(!file.exists(eval(SNPmatrix)) | !(tools::file_ext(eval(SNPmatrix)) == "fst" )) {
       stop("Please point to snpmatrix in fst format")
     }
 
