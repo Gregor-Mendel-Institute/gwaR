@@ -311,7 +311,7 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
 
     SNPmatrix <- fst::fst(SNPmatrix)
     SNPmatrix <- SNPmatrix[(SNPmatrix$chrom == dats$chrom) & (SNPmatrix$pos = dats$pos),]
-
+    head(SNPmatrix)
     acc_table <- SNPmatrix %>%
              dplyr::as_tibble()
              dplyr::select(-contains("chrom"), -contains("pos")) %>%
