@@ -365,7 +365,8 @@ get_phenotype <- function(phenotype_table, phenotype, acc_col = "ACC_ID", specif
 #' @param specific (optional) treatment column that was used to split samples for specific GWAS.
 #' @param plot Default: FALSE. Toggle if a plot should be returned
 #' @param nobees Set to true to disable beeswarm geom (only relevant if plot = TRUE)
-#' @param ... Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.
+#' @param SNPmatrix, Provide SNPmatrix to control if accessions are based on 1001genomes.org or local matrix (default: NULL -> use 1001genomes).
+#' @param ... Arguments passed to other functions. Most relevant is
 #' @seealso \code{\link{get_phenotype}}
 #' @seealso \code{\link{format_gwas}}
 #' @seealso \code{\link{expression_by_snp}}
@@ -379,6 +380,7 @@ phenotype_by_snp <- function(phenotype_table,
                              specific = NULL,
                              plot = FALSE ,
                              nobees = FALSE,
+                             SNPmatrix = NULL,
                              ...) {
 
   #Join phenotypes and snp information
@@ -458,7 +460,7 @@ get_expression <- function(GeneID = NULL, study = 52, list_studies = FALSE){
 #' @param GeneID If NULL (default), retrieves counts for the gene that is nearest. If not NULL it should be a TAIR GeneID ("ATXGNNNNN"). If a GeneID is provided expression of that gene will be intersected with the SNP presence.
 #' @param plot If TRUE, will return a plot instead of a table.
 #' @param nobees If TRUE, observations will be plotted with geom_point.
-#' @param ... Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.
+#' @param SNPmatrix SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.
 #' @seealso \code{\link{format_gwas}}
 #' @seealso \code{\link{get_expression}}
 #' @seealso \code{\link{get_nearest_genes}}
@@ -468,6 +470,7 @@ expression_by_snp <- function(gwas_table,
                               GeneID = NULL,
                               plot = FALSE,
                               nobees = FALSE,
+                              SNPmatrix = NULL,
                               ...){
  if(is.null(GeneID)){
   genes <- get_nearest_genes(gwas_table, SNPrank) %>%
@@ -477,7 +480,7 @@ expression_by_snp <- function(gwas_table,
     genes <- GeneID
     }
   results <- get_expression(GeneID = genes) %>%
-    dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank)$ACC_ID ~ TRUE,
+    dplyr::mutate(SNP = dplyr::case_when(ACC_ID %in% get_accessions(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID ~ TRUE,
                                             TRUE ~ FALSE))
   if(!plot){
     return(results)
@@ -508,10 +511,10 @@ expression_by_snp <- function(gwas_table,
 #' @param ... Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.
 #' @seealso \code{\link{format_gwas}}
 
-plot_acc_map <- function(gwas_table, SNPrank, ...){
+plot_acc_map <- function(gwas_table, SNPrank, SNPmatrix, ...){
 
   sequenced_accessions %>%
-    dplyr::filter(id %in% get_accessions(gwas_table, SNPrank)$ACC_ID) %>%
+    dplyr::filter(id %in% get_accessions(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID) %>%
     leaflet::leaflet(data=.) %>%
     leaflet::addTiles() %>%
     leaflet::addCircleMarkers(lng=~longitude,

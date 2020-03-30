@@ -6,7 +6,7 @@
 \usage{
 phenotype_by_snp(phenotype_table, phenotype, gwas_table, SNPrank,
   acc_col = "ACC_ID", specific = NULL, plot = FALSE,
-  nobees = FALSE, ...)
+  nobees = FALSE, SNPmatrix = NULL, ...)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}
@@ -25,7 +25,9 @@ phenotype_by_snp(phenotype_table, phenotype, gwas_table, SNPrank,
 
 \item{nobees}{Set to true to disable beeswarm geom (only relevant if plot = TRUE)}
 
-\item{...}{Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.}
+\item{SNPmatrix, }{Provide SNPmatrix to control if accessions are based on 1001genomes.org or local matrix (default: NULL -> use 1001genomes).}
+
+\item{...}{Arguments passed to other functions. Most relevant is}
 }
 \description{
 Get intersection between phenotype, and SNP presence.
