@@ -314,7 +314,7 @@ get_accessions <- function(gwas_table, SNPrank, SNPmatrix = NULL){
 
     acc_table <- SNPmatrix %>%
              dplyr::as_tibble()
-             dplyr::select(-"chrom", -"pos") %>%
+             dplyr::select(-tidyselect::starts_with("chrom"), -tidyselect::starts_with("pos")) %>%
              t %>%
              magrittr::set_colnames("SNP") %>%
              as.data.frame() %>%
