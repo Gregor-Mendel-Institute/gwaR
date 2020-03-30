@@ -85,7 +85,8 @@ format_gwas <- function(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NUL
 
 read_limix <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
-  fdr_corr <- qvalue::qvalue(p = gwas_object$pv,pi0 = ifelse(nrow(gwas_object) < 1000, 1,0) )
+  pi0_val <- ifelse(nrow(gwas_object) < 10000, 1,NULL)
+  fdr_corr <- qvalue::qvalue(p = gwas_object$pv, pi0 = pi0_val )
   fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05 )]) %>% max() %>% log10() %>% abs()
   bf_corr <- (0.05/nrow(gwas_object)) %>% log10() %>% abs()
   gwas_object %<>%
