@@ -85,9 +85,13 @@ format_gwas <- function(gwas_path, p_col = NULL, chrom_col = NULL, pos_col = NUL
 
 read_limix <- function(gwas_path){
   gwas_object <- vroom::vroom(gwas_path)
-  pi0_val <- ifelse(nrow(gwas_object) < 10000, 1,NULL)
-  fdr_corr <- qvalue::qvalue(p = gwas_object$pv, pi0 = pi0_val )
+  if(nrow(gwas_object) < 10000){
+  message("Table has less than 10000 rows, no FDR correction")
+  fdr_thresh <- 10^6
+  } else{
+  fdr_corr <- qvalue::qvalue(p = gwas_object$pv)
   fdr_thresh <- cbind(fdr_corr$pvalues[which(fdr_corr$qvalues < 0.05 )]) %>% max() %>% log10() %>% abs()
+  }
   bf_corr <- (0.05/nrow(gwas_object)) %>% log10() %>% abs()
   gwas_object %<>%
     dplyr::mutate(chrom = as.double(stringr::str_extract(chrom, "[0-9]")),
@@ -230,15 +234,17 @@ plot_gwas <- function(gwas_table,
                       nlabels = 5,
                       annotated = TRUE,
                       labeltype = "GeneId",
-                      match_nearest = FALSE
-) {
+                      match_nearest = FALSE) {
   if(!match_nearest){
     annotations <- gwas_table %>% get_overlapping_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   } else {
     annotations <- gwas_table %>% get_nearest_genes(nlabels) %>% tidyr::unite(labs, SNP_rank, labeltype, sep = " :")
   }
-  plot_annots <- ifelse(annotated, ggrepel::geom_text_repel(aes(label = labs), data = annotations), NULL)
-
+  if(annotated){
+  plot_annots <- ggrepel::geom_text_repel(aes(label = labs), data = annotations)
+  } else{
+      plot_annots <- NULL
+  }
   gwas_table %>%
     dplyr::filter(abs(log10_p) > p_filter) %>%
     dplyr::filter(mac > mac_filter) %>%
@@ -395,9 +401,17 @@ phenotype_by_snp <- function(phenotype_table,
 
     # If plot is true
     # Define overplot geom (bees or nobees)
-    overplot_geom <- ifelse(nobees,geom_point(alpha = 0.3), ggbeeswarm::geom_beeswarm(alpha = 0.3))
+    if(nobees){
+    overplot_geom <- geom_point(alpha = 0.3)
+    } else {
+    overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
+      }
     # Define facetting, this depends on specific
-    plot_facets <- ifelse(is.null(specific), facet_grid(reformulate(specific, "Phenotype")), NULL)
+    if(is.null(specific)){
+      plot_facets <- NULL
+    } else {
+      plot_facets <- facet_grid(reformulate(specific, "Phenotype"))
+    }
     # Plot
     p <- result %>%
       ggplot(aes(x = hasSNP, y = phenotype_value)) +
@@ -468,7 +482,11 @@ expression_by_snp <- function(gwas_table,
   if(!plot){
     return(results)
   } else {
-    overplot_geom <- ifelse(nobees,geom_point(alpha = 0.3), ggbeeswarm::geom_beeswarm(alpha = 0.3))
+    if(nobees){
+      overplot_geom <- geom_point(alpha = 0.3)
+    } else {
+      overplot_geom <- ggbeeswarm::geom_beeswarm(alpha = 0.3)
+    }
     p <- results %>%
       ggplot(aes(x = SNP, y = phenotype_value)) +
       geom_boxplot(aes(fill = SNP)) +
