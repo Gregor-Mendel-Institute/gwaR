@@ -864,7 +864,7 @@ snp_linkage <- function(gwas_table,
 
     p <- ggplot(data = plot_data) +
       # Tile Geom for LD values
-      geom_tile(aes(x = pos , color = value, y = 0, height = 2),
+      geom_tile(aes(x = pos , fill = value, color = value , y = 0, height = 2),
                 data = plot_data %>%
                   dplyr::select(pos,value) %>%
                   dplyr::group_by(pos,value) %>%
@@ -878,10 +878,19 @@ snp_linkage <- function(gwas_table,
 
       # color scale
       scale_color_viridis_c(option = "plasma", direction = -1) +
+      scale_fill_viridis_c(option = "plasma", direction = -1) +
       # Gene Arrows
-      gggenes::geom_gene_arrow(aes(xmin = start, xmax = end, y = molecule, fill = gene, forward = direction), data = gene_labels) +
+      gggenes::geom_gene_arrow(aes(xmin = start,
+                                   xmax = end,
+                                   y = molecule,
+                                   #fill = gene,
+                                   forward = direction), data = gene_labels) +
       # Gene labels
-      gggenes::geom_gene_label(aes(xmin = start, xmax = end, y = molecule, fill = gene, label = gene), data = gene_labels) + # Gene labels
+      gggenes::geom_gene_label(aes(xmin = start,
+                                   xmax = end,
+                                   y = molecule,
+                                   #fill = gene,
+                                   label = gene), data = gene_labels) + # Gene labels
       # Minimal Theme
       theme_minimal() +
       # ylim(-0.1,0.1) +
@@ -903,12 +912,12 @@ snp_linkage <- function(gwas_table,
       p <- p +
         guides(color = FALSE,
                shape = FALSE,
-               fill = guide_legend("Gene ID")) # Color guide
+               fill = FALSE) # Color guide
     } else{
       p <- p +
-      guides(color = guide_colorbar(title = "Linkage"),
+      guides(color = FALSE,
              shape = FALSE,
-             fill = guide_legend("Gene ID")) # Color guide
+             fill = guide_colorbar(title = "Linkage")) # Color guide
     }
     return(p)
     }
