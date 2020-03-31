@@ -931,7 +931,7 @@ snp_linkage <- function(gwas_table,
 
 mine_gene <- function(GeneID) {
   # Define Mine
-  thalemine <- InterMineR::initInterMine(mine=listMines()["ThaleMine"])
+  thalemine <- InterMineR::initInterMine(mine=InterMineR::listMines()["ThaleMine"])
 
   # First Query
   pubs <- InterMineR::getTemplateQuery(thalemine, "gene_publications")
