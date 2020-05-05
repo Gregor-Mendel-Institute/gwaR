@@ -18,4 +18,4 @@ Finally, it provides a function to compute and plot linkage between a SNP from t
 As of recently, this package is also able to query thalemine, to retreive curated annotations and a list of publications referencing the gene of interest.
 
 # Other
-This package was developed and used to analyze data in (aradeepopsis: From images to phenotypic traits using deep transfer learning)[https://www.biorxiv.org/content/10.1101/2020.04.01.018192v2]
+This package was developed and used to analyze data in aradeepopsis: From images to phenotypic traits using deep transfer learning[https://www.biorxiv.org/content/10.1101/2020.04.01.018192v2]
