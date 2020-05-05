@@ -16,3 +16,6 @@ gwaR is aimed at making it easy to understand the effect of SNPs on the phenotyp
 Finally, it provides a function to compute and plot linkage between a SNP from the gwas table, and all known SNPs around it. This can again be done using either 1001genomes information (however, this often fails), or a local SNPmatrix. SNPIMPACTS (low, mid, high) are in any case retrieved from 1001genomes.org
 
 As of recently, this package is also able to query thalemine, to retreive curated annotations and a list of publications referencing the gene of interest.
+
+# Other
+This package was developed and used to analyze data in (aradeepopsis: From images to phenotypic traits using deep transfer learning)[https://www.biorxiv.org/content/10.1101/2020.04.01.018192v2]
