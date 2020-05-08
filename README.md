@@ -9,7 +9,7 @@ This package provides no new classes, but the table containing the SNP informati
 
 # Functions
 
-This pacakge provides a generic plotting function for manhattan plots, if desired peaks can be annotated with closest, or overlapping genomic features. Overlapping, or nearest, genomic features can also be retrieved in table format. 
+This package provides a generic plotting function for manhattan plots, if desired peaks can be annotated with closest, or overlapping genomic features. Overlapping, or nearest, genomic features can also be retrieved in table format. 
 
 gwaR is aimed at making it easy to understand the effect of SNPs on the phenotype of interest. For this, gwaR provides functions that first retrieve which accessions contain a SNP, and then split the phenotype table by SNP presence. In addition, gwaR can make use of 1001genomes.org to retrieve expression data, and integrate this information with SNP information, for example to investigate if SNPs in promoters or UTRs have an impact on expression.
 
