@@ -638,7 +638,11 @@ snp_linkage <- function(gwas_table,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
                         use_all_acc = FALSE,
-                        data_only = FALSE) {
+                        data_only = FALSE
+                        #debug.return.sm = F,
+                        #debug.return.sm.anc = F,
+                        #debug.return.gt = F
+                        ) {
 
   gwas_table <- gwas_table %>%
     dplyr::arrange(dplyr::desc(log10_p))
@@ -671,145 +675,168 @@ snp_linkage <- function(gwas_table,
 
   pos = c(region_lower:region_upper)
 
- if(is.null(SNPmatrix)){
+  if(is.null(SNPmatrix)){
 
-  ## Define genotypes for API call
-  if(is.null(use_phenotype_table)){
-    message("Calculating LD based on strains that carry SNP")
-    genotypes <- stringr::str_flatten(get_accessions(gwas_table = gwas_table, SNPrank = rank)$ACC_ID, collapse = ",")
-  }
-  if(!is.null(use_phenotype_table)){
-    message("Calculating LD based on all strains in phenotype table")
-    genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
-    ## construct call
-  }
-  if(use_all_acc){
-    if(!is.null(use_phenotype_table)){
-      message("NOT using supplied genotype table because use_all_acc is TRUE. \n
-            Calculating LD based on all sequenced strains (1135 genomes)")}
+    ## Define genotypes for API call
     if(is.null(use_phenotype_table)){
-      message("Calculating LD based on all sequenced strains (1135 genomes)")}
-    genotypes <-sequenced_accessions %>% unlist %>%  stringr::str_flatten(collapse = ",")
+      message("Calculating LD based on strains that carry SNP")
+      genotypes <- stringr::str_flatten(get_accessions(gwas_table = gwas_table, SNPrank = rank)$ACC_ID, collapse = ",")
+    }
+    if(!is.null(use_phenotype_table)){
+      message("Calculating LD based on all strains in phenotype table")
+      genotypes <- stringr::str_flatten(levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)]))), collapse = ",")
+      ## construct call
+    }
+    if(use_all_acc){
+      if(!is.null(use_phenotype_table)){
+        message("NOT using supplied genotype table because use_all_acc is TRUE. \n
+            Calculating LD based on all sequenced strains (1135 genomes)")}
+      if(is.null(use_phenotype_table)){
+        message("Calculating LD based on all sequenced strains (1135 genomes)")}
+      genotypes <-sequenced_accessions %>% unlist %>%  stringr::str_flatten(collapse = ",")
+    }
+    subset_url <- paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
+                         stringr::str_remove_all(genotypes, "[\n| ]"),
+                         "/regions/",
+                         region,
+                         "/type/fullgenome/format/vcf")
+
+    ## Make tempfile
+    tmp <- tempfile(fileext = ".vcf")
+
+    ## Write vcf table to tempfile
+
+    writeLines( httr::content( httr::GET(subset_url ) ), tmp)
+
+    message(paste0("Downloaded genotype vcf from ",subset_url," to: ", tmp,"\n"))
+    # Step 2 Read vcf table from tempfile
+
+    tmp_vcf <- VariantAnnotation::readVcf(tmp)
+    tmp_vcf <- tmp_vcf[VariantAnnotation::isSNV(tmp_vcf)]
+    tmp_SM <- VariantAnnotation::genotypeToSnpMatrix(tmp_vcf)
+
+    # Step 3 convert to SNPMatrix
+
+    SM_for_linkage <- tmp_SM$genotypes
+
+    # Step 4 calculate ld on genotypes table of SM; return
+
+
+    # The anchored approach: Calculate LD not for all vs all in a region, but for a region against one specific SNP.
+
+    if(anchored){
+      region <- gwas_table %>%
+        dplyr::slice(rank) %>%
+        {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
+      message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
+      # Start with getting the anchor information, similar to above, but the region is only one position.
+      anchor_url <-  paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
+                            genotypes,
+                            "/regions/",
+                            region,
+                            "/type/fullgenome/format/vcf")
+
+      anchor_tmp <- tempfile(fileext = ".vcf")
+
+      writeLines( httr::content( httr::GET(anchor_url ) ), anchor_tmp)
+
+      message(paste0("Downloaded anchor vcf from", anchor_url ," to ", anchor_tmp,"\n"))
+
+      anchor_vcf <- VariantAnnotation::readVcf(anchor_tmp)
+
+      anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
+
+      anchor_SM <- VariantAnnotation::genotypeToSnpMatrix(anchor_vcf)
+
+      anchor_SM <- anchor_SM$genotypes
+    }
   }
-  subset_url <- paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
-                       stringr::str_remove_all(genotypes, "[\n| ]"),
-                       "/regions/",
-                       region,
-                       "/type/fullgenome/format/vcf")
 
-  ## Make tempfile
-  tmp <- tempfile(fileext = ".vcf")
+  # Using a SNPmatrix
 
-  ## Write vcf table to tempfile
+  if(!is.null(SNPmatrix)){
+    if(!file.exists(SNPmatrix) | !(tools::file_ext(SNPmatrix) == "fst" )) {
+      stop("Please point to snpmatrix in fst format")
+    }
+    ## Define genotypes for subsetting
+    if(is.null(use_phenotype_table)){
+      message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
+      genotypes <- colnames(fst::fst(SNPmatrix)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit()
+    }
 
-  writeLines( httr::content( httr::GET(subset_url ) ), tmp)
+    if(!is.null(use_phenotype_table)){
+      message("Calculating LD based on all strains in phenotype table,")
+      genotypes <- levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)])))
+      ## construct call
+    }
+    # Very base R subsetting
+    tmpmatrix <- fst::fst(SNPmatrix)
 
-  message(paste0("Downloaded genotype vcf from ",subset_url," to: ", tmp,"\n"))
-  # Step 2 Read vcf table from tempfile
+    tmpmatrix <-
+      tmpmatrix[(tmpmatrix$chrom == chrom) & (tmpmatrix$pos %in% pos),
+                paste(c(genotypes, "chrom", "pos"))]
 
-  tmp_vcf <- VariantAnnotation::readVcf(tmp)
-  tmp_vcf <- tmp_vcf[VariantAnnotation::isSNV(tmp_vcf)]
-  tmp_SM <- VariantAnnotation::genotypeToSnpMatrix(tmp_vcf)
+    rownames(tmpmatrix) <- paste(tmpmatrix$chrom, tmpmatrix$pos, sep = "_")
 
-  # Step 3 convert to SNPMatrix
+    tmpmatrix <- tmpmatrix[, paste(genotypes)]
 
-  SM_for_linkage <- tmp_SM$genotypes
+    tmpmatrix <- tmpmatrix %>%
+      as.matrix() %>%
+      t()
 
-  # Step 4 calculate ld on genotypes table of SM; return
+    ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
+    ## Contrary to what the documentation seems to say, in a numeric matrix 0 is missing, 1 is allele 1, 2 is hetero, 3 is allele 2.
+    storage.mode(tmpmatrix) <- "double"
+    tmpmatrix[tmpmatrix == 1] <- 3
+    tmpmatrix[tmpmatrix == 0] <- 1
+    storage.mode(tmpmatrix) <- "raw"
 
+    ## Change storage mode so coercion works
 
-  # The anchored approach: Calculate LD not for all vs all in a region, but for a region against one specific SNP.
+    SM_for_linkage <- as(tmpmatrix, "SnpMatrix")
 
-  if(anchored){
-    region <- gwas_table %>%
-      dplyr::slice(rank) %>%
-      {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
-    message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
-    # Start with getting the anchor information, similar to above, but the region is only one position.
-    anchor_url <-  paste0("http://tools.1001genomes.org/api/v1/vcfsubset/strains/",
-                          genotypes,
-                          "/regions/",
-                          region,
-                          "/type/fullgenome/format/vcf")
+    if(anchored){
+      region <- gwas_table %>%
+        dplyr::slice(rank) %>%
+        {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
+      message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
+      # Start with getting the anchor information, similar to above, but the region is only one position.
+      anchor_pos <- gwas_table %>%
+        dplyr::slice(rank) %>%
+        .$pos
 
-    anchor_tmp <- tempfile(fileext = ".vcf")
+      anchor_tmpmatrix <- fst::fst(SNPmatrix)
 
-    writeLines( httr::content( httr::GET(anchor_url ) ), anchor_tmp)
+      anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos),
+                                           paste(c(genotypes, "chrom", "pos"))]
 
-    message(paste0("Downloaded anchor vcf from", anchor_url ," to ", anchor_tmp,"\n"))
+      rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
 
-    anchor_vcf <- VariantAnnotation::readVcf(anchor_tmp)
+      anchor_tmpmatrix <- anchor_tmpmatrix[, paste(genotypes)]
 
-    anchor_vcf <- anchor_vcf[VariantAnnotation::isSNV(anchor_vcf)]
+      anchor_tmpmatrix <- anchor_tmpmatrix %>%
+        as.matrix() %>%
+        t()
 
-    anchor_SM <- VariantAnnotation::genotypeToSnpMatrix(anchor_vcf)
+      ## Recode matrix. see above
+      storage.mode(anchor_tmpmatrix) <- "double"
+      anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 3
+      anchor_tmpmatrix[anchor_tmpmatrix == 0] <- 1
+      storage.mode(anchor_tmpmatrix) <- "raw"
 
-    anchor_SM <- anchor_SM$genotypes
+      anchor_SM <-  as(anchor_tmpmatrix, "SnpMatrix")
+    }
+
   }
- }
- if(!is.null(SNPmatrix)){
-   if(!file.exists(SNPmatrix) | !(tools::file_ext(SNPmatrix) == "fst" )) {
-     stop("Please point to snpmatrix in fst format")
-   }
-   ## Define genotypes for subsetting
-   if(is.null(use_phenotype_table)){
-     message("Calculating LD based on strains in SNPmatrix. Strains are assumed to be numeric.")
-     genotypes <- colnames(fst::fst(SNPmatrix)) %>% {suppressWarnings(as.numeric(.))} %>% na.omit()
-   }
-
-   if(!is.null(use_phenotype_table)){
-     message("Calculating LD based on all strains in phenotype table,")
-     genotypes <- levels(as.factor(unlist(use_phenotype_table[, eval(acc_col)])))
-     ## construct call
-   }
-   # Very base R subsetting
-   tmpmatrix <- fst::fst(SNPmatrix)
-   tmpmatrix <- tmpmatrix[(tmpmatrix$chrom == chrom) & (tmpmatrix$pos %in% pos) & (tmpmatrix$mac > 0), paste(c(genotypes, "chrom", "pos"))]
-   rownames(tmpmatrix) <- paste(tmpmatrix$chrom, tmpmatrix$pos, sep = "_")
-   tmpmatrix <- tmpmatrix[, paste(genotypes)]
-   tmpmatrix <- tmpmatrix %>%
-     as.matrix() %>%
-     t()
-
-   ## Recode matrix. In snpStats, 0 is coding for missing. In the SNPmatrix 0 is coding for "allele 1".
-   ## Contrary to what the documentation seems to say, in a numeric matrix 0 is missing, 1 is allele 1, 2 is hetero, 3 is allele 2.
-   storage.mode(tmpmatrix) <- "double"
-   tmpmatrix[tmpmatrix == 1] <- 3
-   tmpmatrix[tmpmatrix == 0] <- 1
-
-   ## Change storage mode so coercion works
-
-   SM_for_linkage <- methods::new("SnpMatrix", tmpmatrix)
-   if(anchored){
-     region <- gwas_table %>%
-       dplyr::slice(rank) %>%
-       {paste0("Chr", .$chrom, ":", .$pos , ".." , .$pos)}
-     message(paste0("Anchored analysis, with ", region,  " as anchor.\n"))
-     # Start with getting the anchor information, similar to above, but the region is only one position.
-     anchor_pos <- gwas_table %>%
-       dplyr::slice(rank) %>%
-       .$pos
-     anchor_tmpmatrix <- fst::fst(SNPmatrix)
-
-     anchor_tmpmatrix <- anchor_tmpmatrix[(anchor_tmpmatrix$chrom == chrom) & (anchor_tmpmatrix$pos == anchor_pos), paste(c(genotypes, "chrom", "pos"))]
-
-     rownames(anchor_tmpmatrix) <- paste(anchor_tmpmatrix$chrom, anchor_tmpmatrix$pos, sep = "_")
-
-     anchor_tmpmatrix <- anchor_tmpmatrix[, paste(genotypes)]
-
-     anchor_tmpmatrix <- anchor_tmpmatrix %>%
-       as.matrix() %>%
-       t()
-
-     ## Recode matrix. see above
-     storage.mode(anchor_tmpmatrix) <- "double"
-     anchor_tmpmatrix[anchor_tmpmatrix == 1] <- 3
-     anchor_tmpmatrix[anchor_tmpmatrix == 0] <- 1
-
-     anchor_SM <-  methods::new("SnpMatrix", anchor_tmpmatrix)
-   }
-
- }
+  if(debug.return.gt){
+    return(genotypes)
+  }
+  if(debug.return.sm) {
+    return(SM_for_linkage)
+  }
+  if(debug.return.sm.anc){
+    return(anchor_SM)
+  }
   if(anchored){
     ld_tab <- snpStats::ld(SM_for_linkage, anchor_SM, stats = ld_stats)
   }
@@ -818,20 +845,20 @@ snp_linkage <- function(gwas_table,
   }
 
 
- if(!plot){
-  return(ld_tab)
+  if(!plot){
+    return(ld_tab)
   }
- if(!anchored & plot){
+  if(!anchored & plot){
     message("Non-anchored plots are not supported, returning table")
     return(ld_tab)
   }
- if(anchored & plot){
+  if(anchored & plot){
     if(nrow(na.omit(ld_tab)) == 0) {
       stop("LD calculation returned only NAs.")
     }
     snp_pos <- gwas_table %>%
-     dplyr::slice(rank) %>%
-     .$pos
+      dplyr::slice(rank) %>%
+      .$pos
     gene_labels <- araGenome %>%
       dplyr::filter(chromosome_name == chrom,
                     start_position %in% c(region_lower:region_upper),
@@ -895,9 +922,9 @@ snp_linkage <- function(gwas_table,
       theme_minimal() +
       # ylim(-0.1,0.1) +
       facet_grid(rows = vars(
-                               #forcats::fct_relevel("HIGH", "MODERATE", "LOW", "MODIFIER", "LD", "ORF"))
-                               ordered(layer_var, levels = c("HIGH", "MODERATE", "LOW","MODIFIER", "LD","ORF"))),
-                               switch = "y") +
+        #forcats::fct_relevel("HIGH", "MODERATE", "LOW", "MODIFIER", "LD", "ORF"))
+        ordered(layer_var, levels = c("HIGH", "MODERATE", "LOW","MODIFIER", "LD","ORF"))),
+        switch = "y") +
       # Theme adjusments, mainly removing the y-axis
       theme(axis.title.y = element_blank(),
             axis.title.x = element_blank(),
@@ -915,12 +942,12 @@ snp_linkage <- function(gwas_table,
                fill = FALSE) # Color guide
     } else{
       p <- p +
-      guides(color = FALSE,
-             shape = FALSE,
-             fill = guide_colorbar(title = "Linkage")) # Color guide
+        guides(color = FALSE,
+               shape = FALSE,
+               fill = guide_colorbar(title = "Linkage")) # Color guide
     }
     return(p)
-    }
+  }
 
 }
 
