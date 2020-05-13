@@ -331,6 +331,12 @@ gwas_pvals %>%
 
 ## Phenotype effect
 
+gwaR provides function to split the phenotype values by SNP presence. To do this, 
+it needs a phenotype table, the name of the phenotype of interest  (should be one of the columns),
+the GWAS table, the rank of the SNP of interest and optionally a SNPmatrix.
+If no SNPmatrix is provided, 1001genomes.org is queried to obtain SNP presence / absence
+information for the accessions in the phenotype table.
+
 ``` r
 phenotype_by_snp(phenotype_table = for_limix %>%
                    dplyr::filter(date_day == "2018-10-15"),
@@ -350,8 +356,10 @@ phenotype_by_snp(phenotype_table = for_limix %>%
 
 ### On expression
 
+Gene expression is a phenotype, and there are plenty of transcriptome datasets available. 
 This function retrieves expression counts for all accessions, and splits
 by SNP-presence. By default, this gets counts for the nearest gene.
+A list of datasets can be retrieved using get_expression(list_studies = T).
 
 ``` r
 expression_by_snp(gwas_table =  gwas_pvals,
