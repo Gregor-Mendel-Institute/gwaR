@@ -5,6 +5,7 @@ importFrom("magrittr", "%T>%")
 importFrom("magrittr", "%$%")
 importFrom("stats", "na.omit", "reformulate")
 importFrom("data.table", "rbindlist")
+importFrom("methods", "as")
 importClassesFrom("snpStats", "SnpMatrix")
 import(ggplot2)
 export(read_limix,

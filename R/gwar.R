@@ -964,7 +964,7 @@ mine_gene <- function(GeneID) {
   pubs <- InterMineR::getTemplateQuery(thalemine, "gene_publications")
   pubs$where[[1]][["value"]] <- GeneID
   ## Run
-  pubs_info  <- InterMineR::runQuery(thalemine, pubs) %>% as_tibble()
+  pubs_info  <- InterMineR::runQuery(thalemine, pubs) %>% tibble::as_tibble()
   if(nrow(pubs_info > 0)){
     pubs_info <- pubs_info %>%
       dplyr::select("Gene.primaryIdentifier",
@@ -977,7 +977,7 @@ mine_gene <- function(GeneID) {
   functional$where[[1]][["value"]] <- GeneID
   ## Run
   functionals <- InterMineR::runQuery(thalemine, functional) %>%
-    as_tibble()
+    tibble::as_tibble()
   if(nrow(functionals > 0)) {
     functionals <- functionals %>% dplyr::select("Gene.primaryIdentifier",
                                                  "Gene.symbol",
@@ -988,7 +988,8 @@ mine_gene <- function(GeneID) {
   # Third
   go_key <- InterMineR::getTemplateQuery(thalemine, "Keyword_GO_genes")
   go_key$where[[1]][["value"]] <- GeneID
-  go_info  <- InterMineR::runQuery(thalemine, go_key) %>% as_tibble()
+  go_info  <- InterMineR::runQuery(thalemine, go_key) %>%
+    tibble::as_tibble()
 
   # Return
   return(list("functions" = functionals,
