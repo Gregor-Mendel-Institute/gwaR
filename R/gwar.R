@@ -828,15 +828,15 @@ snp_linkage <- function(gwas_table,
     }
 
   }
-  if(debug.return.gt){
-    return(genotypes)
-  }
-  if(debug.return.sm) {
-    return(SM_for_linkage)
-  }
-  if(debug.return.sm.anc){
-    return(anchor_SM)
-  }
+  # if(debug.return.gt){
+  #   return(genotypes)
+  # }
+  # if(debug.return.sm) {
+  #   return(SM_for_linkage)
+  # }
+  # if(debug.return.sm.anc){
+  #   return(anchor_SM)
+  # }
   if(anchored){
     ld_tab <- snpStats::ld(SM_for_linkage, anchor_SM, stats = ld_stats)
   }
