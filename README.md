@@ -195,7 +195,7 @@ gwas_pvals <- read_limix("mac5_rel_senescent_2018-10-15_singletrait_pvals.csv")
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
 
-Plot a manhattan plot with annotations for the top 5 genes (the default)
+Plot a manhattan plot with annotations of overlapping genes for the top5 hits  (the default)
 
 ``` r
 gwas_pvals %>%
