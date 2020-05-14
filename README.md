@@ -6,24 +6,6 @@ About gwaR
 A collection of R functions to conduct downstream GWAS analysis for
 Arabidopsis thaliana.
 
-# Installation
-
-``` r
-devtools::install_github("Gregor-Mendel-Institute/gwaR")
-library(gwaR)
-```
-
-Other packages needed
-    here:
-
-``` r
-library(tidyverse)
-```
-
-``` r
-library(magrittr)
-```
-
 # About
 
 This package provides functions for fast analysis of GWAS tables. This
@@ -38,10 +20,24 @@ provides no new classes, but the table containing the SNP information
 There are wrappers that import csv files to match the desired format.
 This package is pipe-friendly.
 
+# Installation
+
+``` r
+devtools::install_github("Gregor-Mendel-Institute/gwaR")
+library(gwaR)
+```
+
 # Examples
 
 ## Data in
 
+
+Other packages needed here:
+
+``` r
+library(tidyverse)
+library(magrittr)
+```
 Download the 1001 genomes SNPmatrix if needed. This file is ~2.5
 gb.
 
