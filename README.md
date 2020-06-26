@@ -276,6 +276,10 @@ it needs a phenotype table, the name of the phenotype of interest  (should be on
 the GWAS table, the rank of the SNP of interest and optionally a SNPmatrix.
 If no SNPmatrix is provided, 1001genomes.org is queried to obtain SNP presence / absence
 information for the accessions in the phenotype table.
+The for_limix table used here, is similar to the image_data table defined above,
+but contains some summary variables, such as relative senescence, computed
+by dividing the number of pixels classified as senescent, by the total plant pixels
+(green, anthocyanin, senescent).
 
 ``` r
 phenotype_by_snp(phenotype_table = for_limix %>%
