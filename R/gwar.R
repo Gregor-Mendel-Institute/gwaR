@@ -970,7 +970,7 @@ mine_gene <- function(GeneID) {
       dplyr::select("Gene.primaryIdentifier",
                     "Gene.symbol",
                     "Gene.publications.title", "Gene.publications.pubMedId") %>%
-      set_colnames(c("Identifier", "Symbol", "Title", "PMID"))
+      magrittr::set_colnames(c("Identifier", "Symbol", "Title", "PMID"))
   }
   # Second Query
   functional <- InterMineR::getTemplateQuery(thalemine, "gene_generif")
