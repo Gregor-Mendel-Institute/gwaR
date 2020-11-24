@@ -982,7 +982,7 @@ mine_gene <- function(GeneID) {
     functionals <- functionals %>% dplyr::select("Gene.primaryIdentifier",
                                                  "Gene.symbol",
                                                  "Gene.geneRifs.annotation", "Gene.geneRifs.publication.title", "Gene.geneRifs.publication.pubMedId") %>%
-      set_colnames(c("Identifier", "Symbol", "Annotation", "Title", "PMID"))
+      magrittr::set_colnames(c("Identifier", "Symbol", "Annotation", "Title", "PMID"))
   }
 
   # Third
