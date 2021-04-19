@@ -952,9 +952,9 @@ snp_linkage <- function(gwas_table,
                fill = FALSE) # Color guide
     } else{
       p <- p +
-        guides(color = FALSE,
+        guides(color = guide_colorbar(title = "Linkage"),
                shape = FALSE,
-               fill = guide_colorbar(title = "Linkage")) # Color guide
+               fill = FALSE) # Color guide
     }
     return(p)
   }
