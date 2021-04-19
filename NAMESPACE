@@ -20,6 +20,6 @@ export(read_limix,
        get_overlapping_genes,
        plot_gwas,
        snp_linkage,
-       linkage_phenotype,
+       linkage_phenotypes,
        polymorph_impact,
        mine_gene)
