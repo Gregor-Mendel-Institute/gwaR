@@ -1,5 +1,5 @@
 # A collection of functions for working with GWAS tables
-# Niklas Schandry, Patrick Hüther 2019-2020
+# Niklas Schandry, Patrick Hüther 2019-2021
 
 #' A list of sequenced accessions as of 2020
 #' @format A single column of accesion ids
