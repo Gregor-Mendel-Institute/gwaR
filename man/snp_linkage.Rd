@@ -4,11 +4,23 @@
 \alias{snp_linkage}
 \title{Calculate linkage around SNP of interest.}
 \usage{
-snp_linkage(gwas_table, rank, anchored = FALSE, plot = FALSE,
-  SNPmatrix = NULL, nuc_range = 50000, ld_depth = 1000,
-  ld_stats = "R.squared", ld_symmetric = FALSE, ld_cutoff = 0.8,
-  ld_legend = FALSE, use_phenotype_table = NULL, acc_col = "ACC_ID",
-  use_all_acc = FALSE, data_only = FALSE)
+snp_linkage(
+  gwas_table,
+  rank,
+  anchored = FALSE,
+  plot = FALSE,
+  SNPmatrix = NULL,
+  nuc_range = 50000,
+  ld_depth = 1000,
+  ld_stats = "LLR",
+  ld_symmetric = FALSE,
+  ld_cutoff = 10,
+  ld_legend = FALSE,
+  use_phenotype_table = NULL,
+  acc_col = "ACC_ID",
+  use_all_acc = FALSE,
+  data_only = FALSE
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{format_gwas}} function}
@@ -25,11 +37,11 @@ snp_linkage(gwas_table, rank, anchored = FALSE, plot = FALSE,
 
 \item{ld_depth}{Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)}
 
-\item{ld_stats}{The LD statistics, see SNPStats::ld. Default is D.prime}
+\item{ld_stats}{The LD statistics, see SNPStats::ld. Default is LLR}
 
 \item{ld_symmetric}{Should a symmetric matrix be returned? see SNPStats::ld}
 
-\item{ld_cutoff}{Only SNPs that have an LD values >= this will be plotted (default 0.8)}
+\item{ld_cutoff}{Only SNPs that have an LD values >= this will be plotted (default 10)}
 
 \item{ld_legend}{Toggle color legend for LD. Off by default.}
 

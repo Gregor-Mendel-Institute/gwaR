@@ -4,8 +4,7 @@
 \alias{get_phenotype}
 \title{Subset a larger wide-format phenotype table to a defined phenotype.}
 \usage{
-get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID",
-  specific = NULL)
+get_phenotype(phenotype_table, phenotype, acc_col = "ACC_ID", specific = NULL)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}

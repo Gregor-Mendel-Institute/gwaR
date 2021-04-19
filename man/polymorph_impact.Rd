@@ -4,8 +4,14 @@
 \alias{polymorph_impact}
 \title{Retrieve impacts of SNPs within a certain range around a GWAS peak. Uses snpmatrix for genotype lookup}
 \usage{
-polymorph_impact(gwas_table, rank, nuc_range, SNPmatrix,
-  use_phenotype_table = NULL, acc_col)
+polymorph_impact(
+  gwas_table,
+  rank,
+  nuc_range,
+  SNPmatrix,
+  use_phenotype_table = NULL,
+  acc_col
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{format_gwas}} function}

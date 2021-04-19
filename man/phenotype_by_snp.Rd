@@ -4,9 +4,18 @@
 \alias{phenotype_by_snp}
 \title{Get intersection between phenotype, and SNP presence.}
 \usage{
-phenotype_by_snp(phenotype_table, phenotype, gwas_table, SNPrank,
-  acc_col = "ACC_ID", specific = NULL, plot = FALSE,
-  nobees = FALSE, SNPmatrix = NULL, ...)
+phenotype_by_snp(
+  phenotype_table,
+  phenotype,
+  gwas_table,
+  SNPrank,
+  acc_col = "ACC_ID",
+  specific = NULL,
+  plot = FALSE,
+  nobees = FALSE,
+  SNPmatrix = NULL,
+  ...
+)
 }
 \arguments{
 \item{phenotype_table}{a table containing phenotyping measurements, and accession ids (see below)}

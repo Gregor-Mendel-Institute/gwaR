@@ -4,14 +4,16 @@
 \name{limix500rows}
 \alias{limix500rows}
 \title{limix example output; 500 random rows}
-\format{500 rows
+\format{
+500 rows
  \describe{
   \item{chrom}{Chromosome, numeric}
   \item{pos}{Position on the chromosome}
   \item{pv}{p-value}
   \item{maf}{minor allele frequency}
   \item{mac}{minor allele count}
-}}
+}
+}
 \usage{
 limix500rows
 }

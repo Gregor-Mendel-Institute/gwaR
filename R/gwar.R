@@ -615,9 +615,9 @@ polymorph_impact <- function(gwas_table, rank, nuc_range, SNPmatrix, use_phenoty
 #' @param SNPmatrix default NULL. Needs to provided as a path to an fst file. Will be used instead of polymorph.
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
 #' @param ld_depth Maximum SNP distance to calculate LD for (only relevant when anchored = FALSE)
-#' @param ld_stats The LD statistics, see SNPStats::ld. Default is D.prime
+#' @param ld_stats The LD statistics, see SNPStats::ld. Default is LLR
 #' @param ld_symmetric Should a symmetric matrix be returned? see SNPStats::ld
-#' @param ld_cutoff Only SNPs that have an LD values >= this will be plotted (default 0.8)
+#' @param ld_cutoff Only SNPs that have an LD values >= this will be plotted (default 10)
 #' @param ld_legend Toggle color legend for LD. Off by default.
 #' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.
 #' @param use_all_acc If true, will override use_phenotype_table and use all 1135 sequenced accessions.
@@ -631,9 +631,9 @@ snp_linkage <- function(gwas_table,
                         SNPmatrix = NULL,
                         nuc_range = 50000,
                         ld_depth = 1000,
-                        ld_stats = "R.squared",
+                        ld_stats = "LLR",
                         ld_symmetric = FALSE,
-                        ld_cutoff = 0.8,
+                        ld_cutoff = 10,
                         ld_legend = FALSE,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
@@ -951,6 +951,94 @@ snp_linkage <- function(gwas_table,
 
 }
 
+#' Calculate linkage around SNP of interest and obtain phenotypes from phenotype table.
+#' @details This function calculates LD in a specific region.
+#' @details The SNPs per accession in the region are retrieved from polymorph or from a provided SNPmatrix.
+#' @details For all SNPs that pass some criteria (see params), the phenotypes are then retrieved and split by presence of each SNP (SNP = TRUE or FALSE).
+#' @param phenotype_table A table containing phenotypes that should be retrieved. Column with accession IDs has to be name 'ACC_ID'
+#' @param phenotype Name of the phenotype of interest
+#' @param gwas_table Object returned from \code{\link{format_gwas}} function
+#' @param chrom Chromosome where the SNP of interest is
+#' @param pos Position of the SNP of interest on the chromosome
+#' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
+#' @param SNPmatrix default "~/SNPmatrix.fst". If Needs to provided as a path to an fst file. Will be used for linkage calculation instead of polymorph. To use polymorph set to NULL
+#' @param ld_stats The LD statistics, see SNPStats::ld. Default is LLR
+#' @param ld_cutoff Only SNPs that have an LD values >= this will be plotted (default 10)
+#' @param specific (optional) treatment column that was used to split samples for specific GWAS.
+#' @param impacts SNP impacts to subset for can ("MODIFIER","LOW","MODERATE","HIGH"; default: c("MODERATE","HIGH"))
+
+linkage_phenotypes <- function(phenotype_table,
+                               phenotype,
+                               chrom,
+                               pos,
+                               nuc_range,
+                               SNPrank = 1,
+                               ld_stats = "LLR",
+                               ld_cutoff = 10,
+                               SNPmatrix = "~/SNPmatrix.fst",
+                               specific = c("bx","dag"),
+                               impacts =  c("MODERATE","HIGH")){
+
+  snps_in_range <- data.frame("chrom" = chrom, "pos" = pos, log10_p = 10) %>%
+    gwaR::snp_linkage(anchored = T,
+                plot = T,
+                rank = 1,
+                SNPmatrix = "~/SNPmatrix.fst",
+                ld_stats =  "LLR",
+                nuc_range = 20000,
+                ld_legend = T,
+                ld_cutoff = ld_cutoff,
+                data_only = T) %>%
+    dplyr::filter(effect_impact %in% impacts) %>%
+    dplyr::select(chr, pos, effect_impact, type) %>%
+    unique()
+
+  message(paste0("Retrieving ", phenotype, " for ", nrow(snps_in_range), " linked SNPs (", ld_stats, " > ", ld_cutoff,")"))
+
+  ### Retreive phenotypes
+
+  pheno_by_SNP <- data.frame()
+  for(i in 1:nrow(snps_in_range)){
+    currsnp <- snps_in_range$pos[i]
+    currtype <- snps_in_range$type[i]
+    #cat(paste(i,"\n"))
+    if(tryCatch(
+      gwaR::phenotype_by_snp(phenotype_table,
+                             phenotype = phenotype,
+                             gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
+                             specific = specific,
+                             SNPrank = 1,
+                             plot = F,
+                             SNPmatrix = SNPmatrix) ,
+      error = function(e)
+        return(TRUE) ) == T ){
+      cat(paste("Skipping SNP",i, "at", currsnp ,"\n"))
+    } else{
+      tmp_df <- gwaR::phenotype_by_snp(phenotype_table,
+                                         phenotype = phenotype,
+                                         gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
+                                         specific = specific,
+                                         SNPrank = 1,
+                                         plot = F,
+                                         SNPmatrix = SNPmatrix)  %>%
+        dplyr::mutate(pos = currsnp,
+               type = currtype)
+      pheno_by_SNP <- rbind(pheno_by_SNP, tmp_df)
+    }
+  }
+  ### Add original SNP back in
+  pheno_by_SNP <- rbind(gwaR::phenotype_by_snp(phenotype_table,
+                                               phenotype = phenotype,
+                                               gwas_table = data.frame(chrom = chrom, pos = pos , log10_p = 10),
+                                               specific = specific,
+                                               SNPrank = 1,
+                                               plot = F,
+                                               SNPmatrix = SNPmatrix) %>%
+                          dplyr::mutate(pos = pos,
+                                 type = "Hit"),
+                        pheno_by_SNP)
+  pheno_by_SNP
+}
 
 #' Get information from thalemine.
 #' @details This retrieves information from the InterMineR API. Takes a geneID, returns publications, functional annotations and GO Term

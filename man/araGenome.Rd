@@ -4,7 +4,9 @@
 \name{araGenome}
 \alias{araGenome}
 \title{The araGenome object.}
-\format{An object of class \code{data.frame} with 32841 rows and 7 columns.}
+\format{
+An object of class \code{data.frame} with 32841 rows and 7 columns.
+}
 \usage{
 araGenome
 }

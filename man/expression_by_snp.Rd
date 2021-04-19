@@ -5,8 +5,15 @@
 \title{Based on a GWAS table and a rank, returns a table of expression values for a gene where accessions that contain the SNP have TRUE in SNP.
 If no GeneID is specified, the gene that is closest to the SNP will be looked up.}
 \usage{
-expression_by_snp(gwas_table, SNPrank, GeneID = NULL, plot = FALSE,
-  nobees = FALSE, SNPmatrix = NULL, ...)
+expression_by_snp(
+  gwas_table,
+  SNPrank,
+  GeneID = NULL,
+  plot = FALSE,
+  nobees = FALSE,
+  SNPmatrix = NULL,
+  ...
+)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{format_gwas}} function}

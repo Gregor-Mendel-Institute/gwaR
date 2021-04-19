@@ -4,10 +4,12 @@
 \name{sequenced_accessions}
 \alias{sequenced_accessions}
 \title{A list of sequenced accessions as of 2020}
-\format{A single column of accesion ids
+\format{
+A single column of accesion ids
 \describe{
 \item{ACC_ID}{Accession IDs}
-}}
+}
+}
 \usage{
 sequenced_accessions
 }

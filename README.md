@@ -404,3 +404,7 @@ gwas_pvals %>%
     ## Retrieving SNP impacts for strains in SNPmatrix. Strains are assumed to be numeric.
 
 ![](gwar_doc_files/figure-gfm/unnamed-chunk-19-1.jpeg)<!-- -->
+
+### linkage_phenotype()
+
+As of version 0.6 this package contains a function to collect phenotypes for a set of linked SNPs from the phenotype table. 
