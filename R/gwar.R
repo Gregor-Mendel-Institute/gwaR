@@ -984,7 +984,7 @@ linkage_phenotypes <- function(phenotype_table,
                 rank = 1,
                 SNPmatrix = "~/SNPmatrix.fst",
                 ld_stats =  "LLR",
-                nuc_range = 20000,
+                nuc_range = nuc_range,
                 ld_legend = T,
                 ld_cutoff = ld_cutoff,
                 data_only = T) %>%
