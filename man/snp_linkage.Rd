@@ -16,6 +16,7 @@ snp_linkage(
   ld_symmetric = FALSE,
   ld_cutoff = 10,
   ld_legend = FALSE,
+  add_ld_band = FALSE,
   use_phenotype_table = NULL,
   acc_col = "ACC_ID",
   use_all_acc = FALSE,
@@ -44,6 +45,8 @@ snp_linkage(
 \item{ld_cutoff}{Only SNPs that have an LD values >= this will be plotted (default 10)}
 
 \item{ld_legend}{Toggle color legend for LD. Off by default.}
+
+\item{add_ld_band}{add a layer showing the LD as a lot of lines. (default FALSE)}
 
 \item{use_phenotype_table}{If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.}
 

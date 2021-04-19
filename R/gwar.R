@@ -618,6 +618,7 @@ polymorph_impact <- function(gwas_table, rank, nuc_range, SNPmatrix, use_phenoty
 #' @param ld_stats The LD statistics, see SNPStats::ld. Default is LLR
 #' @param ld_symmetric Should a symmetric matrix be returned? see SNPStats::ld
 #' @param ld_cutoff Only SNPs that have an LD values >= this will be plotted (default 10)
+#' @param add_ld_band add a layer showing the LD as a lot of lines. (default FALSE)
 #' @param ld_legend Toggle color legend for LD. Off by default.
 #' @param use_phenotype_table If supplied: Genotypes listed here will be used for linkage analysis. Otherwise, all accessions that carry this SNP will be included.
 #' @param use_all_acc If true, will override use_phenotype_table and use all 1135 sequenced accessions.
@@ -635,6 +636,7 @@ snp_linkage <- function(gwas_table,
                         ld_symmetric = FALSE,
                         ld_cutoff = 10,
                         ld_legend = FALSE,
+                        add_ld_band = FALSE,
                         use_phenotype_table = NULL,
                         acc_col = "ACC_ID",
                         use_all_acc = FALSE,
@@ -890,18 +892,12 @@ snp_linkage <- function(gwas_table,
     ## Build Plot
 
     p <- ggplot(data = plot_data) +
-      # Tile Geom for LD values
-      geom_tile(aes(x = pos , fill = value, color = value , y = 0, height = 2),
-                data = plot_data %>%
-                  dplyr::select(pos,value) %>%
-                  dplyr::group_by(pos,value) %>%
-                  dplyr::distinct() %>%
-                  dplyr::mutate(layer_var = "LD")) +
+
       # Line denoting SNP of interest
       geom_vline(aes(xintercept = snp_pos), color = "darkred") +
-      # Modifier SNPs
-      geom_point(aes(x= pos, y = 0, shape = effect_impact), size = 2.5, alpha = 0.8,
-                 data = plot_data %>% dplyr::filter(value >= ld_cutoff)) +
+      # SNPs
+      geom_point(aes(x= pos, y = 0, shape = effect_impact, color = value), size = 2.5, alpha = 0.8,
+                 data = plot_data) +
 
       # color scale
       scale_color_viridis_c(option = "plasma", direction = -1) +
@@ -935,6 +931,16 @@ snp_linkage <- function(gwas_table,
             legend.position = "bottom",
             panel.grid.minor.y = element_blank(),
             panel.grid.major.y = element_blank())
+    if(add_ld_band){
+      # Tile Geom for LD values
+      p <- p +
+        geom_tile(aes(x = pos , fill = value, color = value , y = 0, height = 2),
+                data = plot_data %>%
+                  dplyr::select(pos,value) %>%
+                  dplyr::group_by(pos,value) %>%
+                  dplyr::distinct() %>%
+                  dplyr::mutate(layer_var = "LD"))
+    }
     if(!ld_legend){
       p <- p +
         guides(color = FALSE,

@@ -10,7 +10,6 @@ linkage_phenotypes(
   chrom,
   pos,
   nuc_range,
-  SNPrank = 1,
   ld_stats = "LLR",
   ld_cutoff = 10,
   SNPmatrix = "~/SNPmatrix.fst",
