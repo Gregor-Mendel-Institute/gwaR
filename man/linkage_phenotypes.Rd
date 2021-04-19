@@ -37,8 +37,6 @@ linkage_phenotypes(
 \item{specific}{(optional) treatment column that was used to split samples for specific GWAS.}
 
 \item{impacts}{SNP impacts to subset for can ("MODIFIER","LOW","MODERATE","HIGH"; default: c("MODERATE","HIGH"))}
-
-\item{gwas_table}{Object returned from \code{\link{format_gwas}} function}
 }
 \description{
 Calculate linkage around SNP of interest and obtain phenotypes from phenotype table.

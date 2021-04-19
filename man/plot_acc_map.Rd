@@ -4,14 +4,14 @@
 \alias{plot_acc_map}
 \title{Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields}
 \usage{
-plot_acc_map(gwas_table, SNPrank, SNPmatrix, ...)
+plot_acc_map(gwas_table, SNPrank, SNPmatrix)
 }
 \arguments{
 \item{gwas_table}{Object returned from \code{\link{format_gwas}} function}
 
 \item{SNPrank}{The (-log10(p)) rank of the SNP of interest}
 
-\item{...}{Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.}
+\item{SNPmatrix}{provide path to control if accessions are based on 1001genomes.org or local matrix.}
 }
 \description{
 Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields

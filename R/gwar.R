@@ -17,7 +17,7 @@ sequenced_accessions <- read.csv("data/accessions.csv")
 #'   \item{maf}{minor allele frequency}
 #'   \item{mac}{minor allele count}
 #' }
-limix500rows <- "data/example_limix.csv"
+limix500rows <- read.csv("data/example_limix.csv")
 
 #' The araGenome object.
 araGenome <- biomaRt::getBM(c("ensembl_gene_id",
@@ -508,10 +508,10 @@ expression_by_snp <- function(gwas_table,
 #' Plot an interactive map of accessions that carry a SNP of interest, needs a list of accessions with lng, lat fields
 #' @param gwas_table Object returned from \code{\link{format_gwas}} function
 #' @param SNPrank The (-log10(p)) rank of the SNP of interest
-#' @param ... Arguments passed to other functions. Most relevant is SNPmatrix, to control if accessions are based on 1001genomes.org or local matrix.
+#' @param SNPmatrix provide path to control if accessions are based on 1001genomes.org or local matrix.
 #' @seealso \code{\link{format_gwas}}
 
-plot_acc_map <- function(gwas_table, SNPrank, SNPmatrix, ...){
+plot_acc_map <- function(gwas_table, SNPrank, SNPmatrix){
 
   sequenced_accessions %>%
     dplyr::filter(id %in% get_accessions(gwas_table, SNPrank, SNPmatrix = SNPmatrix)$ACC_ID) %>%
@@ -919,7 +919,7 @@ snp_linkage <- function(gwas_table,
       # ylim(-0.1,0.1) +
       facet_grid(rows = vars(
         #forcats::fct_relevel("HIGH", "MODERATE", "LOW", "MODIFIER", "LD", "ORF"))
-        ordered(layer_var, levels = c("HIGH", "MODERATE", "LOW","MODIFIER", "LD","ORF"))),
+        ordered(layer_var, levels = c("HIGH", "MODERATE", "LOW","MODIFIER","ORF"))),
         switch = "y") +
       # Theme adjusments, mainly removing the y-axis
       theme(axis.title.y = element_blank(),
@@ -939,7 +939,11 @@ snp_linkage <- function(gwas_table,
                   dplyr::select(pos,value) %>%
                   dplyr::group_by(pos,value) %>%
                   dplyr::distinct() %>%
-                  dplyr::mutate(layer_var = "LD"))
+                  dplyr::mutate(layer_var = "LD")) +
+        facet_grid(rows = vars(
+          #forcats::fct_relevel("HIGH", "MODERATE", "LOW", "MODIFIER", "LD", "ORF"))
+          ordered(layer_var, levels = c("HIGH", "MODERATE", "LOW","MODIFIER", "LD","ORF"))),
+          switch = "y")
     }
     if(!ld_legend){
       p <- p +
@@ -963,7 +967,6 @@ snp_linkage <- function(gwas_table,
 #' @details For all SNPs that pass some criteria (see params), the phenotypes are then retrieved and split by presence of each SNP (SNP = TRUE or FALSE).
 #' @param phenotype_table A table containing phenotypes that should be retrieved. Column with accession IDs has to be name 'ACC_ID'
 #' @param phenotype Name of the phenotype of interest
-#' @param gwas_table Object returned from \code{\link{format_gwas}} function
 #' @param chrom Chromosome where the SNP of interest is
 #' @param pos Position of the SNP of interest on the chromosome
 #' @param nuc_range Range of nucleotides that will be analyzed (total, split evenly up and downstream of the SNP)
