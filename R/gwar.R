@@ -975,6 +975,7 @@ snp_linkage <- function(gwas_table,
 #' @param ld_cutoff Only SNPs that have an LD values >= this will be plotted (default 10)
 #' @param specific (optional) treatment column that was used to split samples for specific GWAS.
 #' @param impacts SNP impacts to subset for can ("MODIFIER","LOW","MODERATE","HIGH"; default: c("MODERATE","HIGH"))
+#' @param verbose verbose mode (default FALSE)
 
 linkage_phenotypes <- function(phenotype_table,
                                phenotype,
@@ -985,13 +986,14 @@ linkage_phenotypes <- function(phenotype_table,
                                ld_cutoff = 10,
                                SNPmatrix = "~/SNPmatrix.fst",
                                specific = c("bx","dag"),
-                               impacts =  c("MODERATE","HIGH")){
+                               impacts =  c("MODERATE","HIGH"),
+                               verbose = FALSE){
 
   snps_in_range <- data.frame("chrom" = chrom, "pos" = pos, log10_p = 10) %>%
     gwaR::snp_linkage(anchored = T,
                 plot = T,
                 rank = 1,
-                SNPmatrix = "~/SNPmatrix.fst",
+                SNPmatrix = SNPmatrix,
                 ld_stats =  "LLR",
                 nuc_range = nuc_range,
                 ld_legend = T,
@@ -1009,17 +1011,8 @@ linkage_phenotypes <- function(phenotype_table,
   for(i in 1:nrow(snps_in_range)){
     currsnp <- snps_in_range$pos[i]
     currtype <- snps_in_range$type[i]
-    #cat(paste(i,"\n"))
-    ifelse(tryCatch(
-      gwaR::phenotype_by_snp(phenotype_table,
-                             phenotype = phenotype,
-                             gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
-                             specific = specific,
-                             SNPrank = 1,
-                             plot = F,
-                             SNPmatrix = SNPmatrix) ,
-      error = function(e) return(TRUE)),
-      cat(paste("Skipping SNP",i, "at", currsnp ,"\n")),
+    if(verbose)  cat(paste(i,"Postion", currsnp, "Type",currtype, "\n"))
+    tryCatch(
       pheno_by_SNP <- rbind(pheno_by_SNP, gwaR::phenotype_by_snp(phenotype_table,
                                                                  phenotype = phenotype,
                                                                  gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
@@ -1027,9 +1020,12 @@ linkage_phenotypes <- function(phenotype_table,
                                                                  SNPrank = 1,
                                                                  plot = F,
                                                                  SNPmatrix = SNPmatrix)  %>%
-                              dplyr::mutate(pos = currsnp, type = currtype))
-    )
-    }
+                              dplyr::mutate(pos = currsnp, type = currtype)),
+      error = function(e) {
+                          message(paste("Skipping SNP",i, "at", currsnp ,"\n"))
+                          message(e)})
+      }
+
   ### Add original SNP back in
   pheno_by_SNP <- rbind(gwaR::phenotype_by_snp(phenotype_table,
                                                phenotype = phenotype,
