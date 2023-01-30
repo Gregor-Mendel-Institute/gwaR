@@ -6,7 +6,7 @@
 #' \describe{
 #' \item{ACC_ID}{Accession IDs}
 #' }
-sequenced_accessions <- read.csv("data/accessions.csv")
+sequenced_accessions <- readr::read_csv("data/accessions.csv.gz")
 
 #' limix example output; 500 random rows
 #' @format 500 rows
@@ -17,7 +17,7 @@ sequenced_accessions <- read.csv("data/accessions.csv")
 #'   \item{maf}{minor allele frequency}
 #'   \item{mac}{minor allele count}
 #' }
-limix500rows <- read.csv("data/example_limix.csv")
+limix500rows <- readr::read_csv("data/example_limix.csv.gz")
 
 #' The araGenome object.
 araGenome <- biomaRt::getBM(c("ensembl_gene_id",
@@ -1010,7 +1010,7 @@ linkage_phenotypes <- function(phenotype_table,
     currsnp <- snps_in_range$pos[i]
     currtype <- snps_in_range$type[i]
     #cat(paste(i,"\n"))
-    if(tryCatch(
+    ifelse(tryCatch(
       gwaR::phenotype_by_snp(phenotype_table,
                              phenotype = phenotype,
                              gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
@@ -1018,22 +1018,18 @@ linkage_phenotypes <- function(phenotype_table,
                              SNPrank = 1,
                              plot = F,
                              SNPmatrix = SNPmatrix) ,
-      error = function(e)
-        return(TRUE) ) == T ){
-      cat(paste("Skipping SNP",i, "at", currsnp ,"\n"))
-    } else{
-      tmp_df <- gwaR::phenotype_by_snp(phenotype_table,
-                                         phenotype = phenotype,
-                                         gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
-                                         specific = specific,
-                                         SNPrank = 1,
-                                         plot = F,
-                                         SNPmatrix = SNPmatrix)  %>%
-        dplyr::mutate(pos = currsnp,
-               type = currtype)
-      pheno_by_SNP <- rbind(pheno_by_SNP, tmp_df)
+      error = function(e) return(TRUE)),
+      cat(paste("Skipping SNP",i, "at", currsnp ,"\n")),
+      pheno_by_SNP <- rbind(pheno_by_SNP, gwaR::phenotype_by_snp(phenotype_table,
+                                                                 phenotype = phenotype,
+                                                                 gwas_table = data.frame(chrom = chrom, pos = currsnp , log10_p = 10),
+                                                                 specific = specific,
+                                                                 SNPrank = 1,
+                                                                 plot = F,
+                                                                 SNPmatrix = SNPmatrix)  %>%
+                              dplyr::mutate(pos = currsnp, type = currtype))
+    )
     }
-  }
   ### Add original SNP back in
   pheno_by_SNP <- rbind(gwaR::phenotype_by_snp(phenotype_table,
                                                phenotype = phenotype,
